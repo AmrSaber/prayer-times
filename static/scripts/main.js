@@ -1,5 +1,6 @@
-const mosqueId = "ae3cb3a6-066b-42fd-9684-3e10e8a3c118";
+let mosque;
 
+const mosqueNameElement = document.getElementById("mosque-name");
 const fajrTimingElement = document.getElementById("fajr-timing");
 const zuhrTimingElement = document.getElementById("zuhr-timing");
 const asrTimingElement = document.getElementById("asr-timing");
@@ -8,7 +9,7 @@ const ishaTimingElement = document.getElementById("isha-timing");
 
 async function getTimings() {
   const year = new Date().getUTCFullYear();
-  const localStorageKey = `${mosqueId}::${year}`;
+  const localStorageKey = `timings::${year}::${mosque.id}`;
 
   // If timings are saved in local storage, return them directly
   const savedTimings = localStorage.getItem(localStorageKey);
@@ -17,10 +18,9 @@ async function getTimings() {
   }
 
   // If timings are not in local storage, fetch them, save them in local storage, and return them
-  const response = await fetch(`https://time.my-masjid.com/api/TimingsInfoScreen/GetMasjidTimings?GuidId=${mosqueId}`);
-  const timings = await response.json().then(d => d.model.salahTimings);
-
+  const timings = await fetchTimings({ mosqueId: mosque.id });
   localStorage.setItem(localStorageKey, JSON.stringify(timings));
+
   return timings;
 };
 
@@ -31,6 +31,8 @@ function bind(timings) {
 
   const todayTiming = timings.find(t => t.day == today && t.month == thisMonth);
 
+  mosqueNameElement.innerHTML = mosque.name;
+
   fajrTimingElement.innerHTML = todayTiming.fajr;
   zuhrTimingElement.innerHTML = todayTiming.zuhr;
   asrTimingElement.innerHTML = todayTiming.asr;
@@ -38,11 +40,18 @@ function bind(timings) {
   ishaTimingElement.innerHTML = todayTiming.isha;
 }
 
-getTimings()
-  .then(bind)
-  .then(() => {
-    setInterval(
-      getTimings().then(bind),
-      60_000
-    );
-  });
+mosque = localStorage.getItem("mosque");
+if (mosque == null) {
+  window.location.replace("/select-mosque");
+} else {
+  mosque = JSON.parse(mosque);
+
+  getTimings()
+    .then(bind)
+    .then(() => {
+      setInterval(
+        getTimings().then(bind),
+        60_000
+      );
+    });
+}
