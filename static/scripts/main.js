@@ -1,11 +1,15 @@
 let mosque;
 
 const mosqueNameElement = document.getElementById("mosque-name");
+
 const fajrTimingElement = document.getElementById("fajr-timing");
 const zuhrTimingElement = document.getElementById("zuhr-timing");
 const asrTimingElement = document.getElementById("asr-timing");
 const maghribTimingElement = document.getElementById("maghrib-timing");
 const ishaTimingElement = document.getElementById("isha-timing");
+
+const sunriseTimingElement = document.getElementById("sunrise-timing");
+const midnightTimingElement = document.getElementById("midnight-timing");
 
 async function getTimings() {
   const year = new Date().getUTCFullYear();
@@ -29,7 +33,7 @@ function bind(timings) {
   const today = now.getUTCDate();
   const thisMonth = now.getUTCMonth() + 1;
 
-  const todayTiming = timings.find(t => t.day == today && t.month == thisMonth);
+  const todayTiming = timings.salahTimings.find(t => t.day == today && t.month == thisMonth);
 
   mosqueNameElement.innerHTML = mosque.name;
 
@@ -38,6 +42,37 @@ function bind(timings) {
   asrTimingElement.innerHTML = todayTiming.asr;
   maghribTimingElement.innerHTML = todayTiming.maghrib;
   ishaTimingElement.innerHTML = todayTiming.isha;
+
+  sunriseTimingElement.innerHTML = todayTiming.shouruq;
+  midnightTimingElement.innerHTML = getMidnightTime(todayTiming);
+}
+
+function getMidnightTime(timing) {
+  const sunset = parseTime(timing.maghrib);
+  const fajr = parseTime(timing.fajr);
+
+  let midnightMinutes = (sunset.minutes + fajr.hours) / 2;
+  midnightMinutes -= midnightMinutes % 1;
+
+  let midnightHour = (sunset.hours + fajr.hours + 24) / 2;
+  const hourFraction = midnightHour % 1;
+
+  if (hourFraction != 0) {
+    midnightMinutes += 30;
+    midnightHour -= hourFraction;
+  }
+
+  while (midnightMinutes > 60) {
+    midnightHour++;
+    midnightMinutes -= 60;
+  }
+
+  return `${midnightHour}:${midnightMinutes}`;
+}
+
+function parseTime(time) {
+  const [hours, minutes] = time.split(':');
+  return { hours: Number(hours), minutes: Number(minutes) };
 }
 
 mosque = localStorage.getItem("mosque");
@@ -50,7 +85,7 @@ if (mosque == null) {
     .then(bind)
     .then(() => {
       setInterval(
-        getTimings().then(bind),
+        () => getTimings().then(bind),
         60_000
       );
     });

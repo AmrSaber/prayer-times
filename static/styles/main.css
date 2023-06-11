@@ -8,22 +8,35 @@
   justify-content: end;
 }
 
-#timings {
-  direction: rtl;
-
+.table {
   width: fit-content;
-  margin: 16px auto;
-
   display: grid;
+}
+
+#prayer-timings {
+  direction: rtl;
+  margin: 16px auto;
+  padding: 16px;
+
   grid-auto-flow: column;
   grid-template-rows: 16px 16px;
 
   row-gap: 16px;
   column-gap: 24px;
+}
 
-  padding: 16px;
+#other-timings {
+  grid-auto-flow: row;
+  grid-template-columns: 1fr 1fr;
 
-  border-radius: 8px;
+  margin: 16px;
+  margin-top: 32px;
+
+  gap: 8px;
+}
+
+#other-timings :nth-child(odd) {
+  font-weight: bold;
 }
 
 #timings > * {
@@ -33,4 +46,8 @@
 
 main a {
   padding: 8px;
+}
+
+h2 {
+  margin: 16px;
 }

@@ -5,7 +5,7 @@ const CAMBRIDGE_ID = "20245";
 
 async function fetchTimings({ mosqueId }) {
   const response = await fetch(`${BASE_URL}/TimingsInfoScreen/GetMasjidTimings?GuidId=${mosqueId}`);
-  return await response.json().then(d => d.model.salahTimings);
+  return await response.json().then(d => d.model);
 }
 
 async function fetchMosques() {
