@@ -1,0 +1,32 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  direction: rtl;
+
+  font-family: Arial, Helvetica, sans-serif;
+  color: #333;
+}
+
+#timings {
+  width: fit-content;
+  margin: 16px auto;
+
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: 16px 16px;
+
+  row-gap: 16px;
+  column-gap: 24px;
+
+  padding: 16px;
+
+  background-color: #f1f1f1;
+  border-radius: 8px;
+}
+
+#timings > * {
+  display: flex;
+  justify-content: center;
+}
