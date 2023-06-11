@@ -8,11 +8,6 @@
   justify-content: end;
 }
 
-.table {
-  width: fit-content;
-  display: grid;
-}
-
 #prayer-timings {
   direction: rtl;
   margin: 1rem auto;
@@ -30,7 +25,7 @@
   justify-content: center;
 }
 
-.name {
+label:has(+ span) {
   font-weight: bold;
 }
 
@@ -49,18 +44,10 @@ label:has(+ .next) {
   gap: 0.5rem;
 }
 
-#other-timings :nth-child(odd) {
-  font-weight: bold;
-}
-
 main a {
   padding: 0.5rem;
 }
 
 h2 {
   margin: 1rem;
-}
-
-.hide {
-  display: none;
 }

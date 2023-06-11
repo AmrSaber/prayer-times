@@ -20,11 +20,6 @@
   box-sizing: border-box;
 }
 
-body > h1 {
-  display: inline-block;
-  margin-inline: auto;
-}
-
 body {
   background-color: #eee;
 
@@ -40,6 +35,15 @@ main {
 
   background-color: white;
   border-radius: 0.5rem;
+}
+
+.hide {
+  display: none;
+}
+
+.table {
+  width: fit-content;
+  display: grid;
 }
 
 a,
