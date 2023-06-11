@@ -31,14 +31,6 @@
   justify-content: center;
 }
 
-a,
-a:visited,
-a:active {
-  color: dodgerblue;
-  text-decoration: none;
+main a {
   padding: 8px;
-}
-
-a:hover {
-  color: rgb(10, 73, 136);
 }

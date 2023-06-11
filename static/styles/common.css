@@ -23,3 +23,21 @@ main {
   background-color: white;
   border-radius: 8px;
 }
+
+a,
+a:visited,
+a:active {
+  color: dodgerblue;
+  text-decoration: none;
+}
+
+a:hover {
+  color: rgb(10, 73, 136);
+}
+
+footer {
+  font-size: small;
+  position: fixed;
+  bottom: 4px;
+  right: 4px;
+}
