@@ -1,3 +1,15 @@
+@media screen and (max-width: 460px) {
+  html {
+    font-size: 12px;
+  }
+}
+
+@media screen and (max-width: 350px) {
+  html {
+    font-size: 8px;
+  }
+}
+
 * {
   box-sizing: border-box;
 }
@@ -18,10 +30,10 @@ main {
   width: 50ch;
 
   margin-inline: auto;
-  padding: 16px 32px;
+  padding: 1rem;
 
   background-color: white;
-  border-radius: 8px;
+  border-radius: 0.5rem;
 }
 
 a,
