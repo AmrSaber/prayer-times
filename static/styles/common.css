@@ -1,12 +1,18 @@
 @media screen and (max-width: 460px) {
   html {
+    font-size: 14px;
+  }
+}
+
+@media screen and (max-width: 380px) {
+  html {
     font-size: 12px;
   }
 }
 
 @media screen and (max-width: 350px) {
   html {
-    font-size: 8px;
+    font-size: 10px;
   }
 }
 
@@ -27,7 +33,7 @@ body {
 }
 
 main {
-  width: 50ch;
+  width: fit-content;
 
   margin-inline: auto;
   padding: 1rem;
@@ -50,6 +56,6 @@ a:hover {
 footer {
   font-size: small;
   position: fixed;
-  bottom: 4px;
-  right: 4px;
+  bottom: 0.5rem;
+  right: 1rem;
 }
