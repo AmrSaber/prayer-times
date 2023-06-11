@@ -25,6 +25,16 @@
   column-gap: 24px;
 }
 
+#prayer-timings > * {
+  display: flex;
+  justify-content: center;
+}
+
+#prayer-timings .next,
+#prayer-timings :has(+ .next) {
+  color: green;
+}
+
 #other-timings {
   grid-auto-flow: row;
   grid-template-columns: 1fr 1fr;
@@ -37,11 +47,6 @@
 
 #other-timings :nth-child(odd) {
   font-weight: bold;
-}
-
-#timings > * {
-  display: flex;
-  justify-content: center;
 }
 
 main a {

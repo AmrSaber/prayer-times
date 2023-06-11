@@ -45,6 +45,36 @@ function bind(timings) {
 
   sunriseTimingElement.innerHTML = todayTiming.shouruq;
   midnightTimingElement.innerHTML = getMidnightTime(todayTiming);
+
+  // Mark the next prayer time
+  const prayers = [
+    { element: fajrTimingElement, time: parseTime(fajrTimingElement.innerHTML) },
+    { element: zuhrTimingElement, time: parseTime(zuhrTimingElement.innerHTML) },
+    { element: asrTimingElement, time: parseTime(asrTimingElement.innerHTML) },
+    { element: maghribTimingElement, time: parseTime(maghribTimingElement.innerHTML) },
+    { element: ishaTimingElement, time: parseTime(ishaTimingElement.innerHTML) },
+  ];
+
+  const currentNext = prayers.findIndex(p => p.element.classList.contains("next"));
+
+  let nextIndex = -1;
+  for (let i = 0; i < prayers.length; i++) {
+    const prayer = prayers[i];
+
+    if (prayer.time.hours > now.getHours() && prayer.time.minutes > now.getMinutes()) {
+      nextIndex = i;
+      break;
+    }
+  }
+
+  if (nextIndex == -1) {
+    nextIndex = 0;
+  }
+
+  if (currentNext != nextIndex) {
+    if (currentNext != -1) { prayers[currentNext].element.classList.remove("next"); }
+    prayers[nextIndex].element.classList.add("next");
+  }
 }
 
 function getMidnightTime(timing) {
