@@ -59,3 +59,14 @@ footer {
   bottom: 0.5rem;
   right: 1rem;
 }
+
+@media screen and (prefers-color-scheme: dark) {
+  body {
+    background-color: black;
+    color: white;
+  }
+
+  main {
+    background-color: #333;
+  }
+}
