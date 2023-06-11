@@ -30,12 +30,12 @@
   justify-content: center;
 }
 
-.prayer-name {
+.name {
   font-weight: bold;
 }
 
-#prayer-timings .next,
-.prayer-name:has(+ .next) {
+.next,
+label:has(+ .next) {
   color: green;
 }
 
@@ -59,4 +59,8 @@ main a {
 
 h2 {
   margin: 1rem;
+}
+
+.hide {
+  display: none;
 }

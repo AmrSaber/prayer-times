@@ -1,4 +1,5 @@
 let mosque;
+const FRIDAY_INDEX = 5;
 
 const mosqueNameElement = document.getElementById("mosque-name");
 
@@ -14,6 +15,7 @@ const asrIqamahElement = document.getElementById("asr-iqamah");
 const maghribIqamahElement = document.getElementById("maghrib-iqamah");
 const ishaIqamahElement = document.getElementById("isha-iqamah");
 
+const fridayTimingElement = document.getElementById("friday-timing");
 const sunriseTimingElement = document.getElementById("sunrise-timing");
 const midnightTimingElement = document.getElementById("midnight-timing");
 
@@ -55,16 +57,33 @@ function bind(timings) {
   maghribIqamahElement.innerHTML = todayTiming.iqamah_Maghrib;
   ishaIqamahElement.innerHTML = todayTiming.iqamah_Isha;
 
+  fridayTimingElement.innerHTML = timings.masjidSettings.jumahTime;
   sunriseTimingElement.innerHTML = todayTiming.shouruq;
   midnightTimingElement.innerHTML = getMidnightTime(todayTiming);
+
+  if (now.getDay() == FRIDAY_INDEX) {
+    document.querySelectorAll('.friday-only.hide').forEach(e => {
+      e.classList.remove("hide");
+      e.classList.add("show");
+    });
+
+    zuhrIqamahElement.innerHTML = "-";
+  } else {
+    document.querySelectorAll('.friday-only.show').forEach(e => {
+      e.classList.remove("show");
+      e.classList.add("hide");
+    });
+  }
 
   // Mark the next prayer time
   markNextElement([
     fajrTimingElement,
+    sunriseTimingElement,
     zuhrTimingElement,
     asrTimingElement,
     maghribTimingElement,
     ishaTimingElement,
+    midnightTimingElement,
   ]);
 
   // Mark next iqamah time
@@ -81,7 +100,9 @@ function markNextElement(elements) {
   const now = new Date();
   const currentNext = elements.findIndex(e => e.classList.contains("next"));
 
-  const elementsWithTime = elements.map(e => ({ element: e, time: parseTime(e.innerHTML) }));
+  const elementsWithTime = elements
+    .filter(e => e.innerHTML != "-")
+    .map(e => ({ element: e, time: parseTime(e.innerHTML) }));
 
   let nextIndex = -1;
   for (let i = 0; i < elementsWithTime.length; i++) {

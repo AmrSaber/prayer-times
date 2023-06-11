@@ -25,26 +25,26 @@
     <h2>Prayer Times</h2>
     <div class="table" id="prayer-timings">
       <span></span>
-      <span>أذان</span>
-      <span>إقامة</span>
+      <label>أذان</label>
+      <label>إقامة</label>
 
-      <span class="prayer-name">فجر</span>
+      <label>فجر</label>
       <span id="fajr-timing">-</span>
       <span id="fajr-iqamah">-</span>
 
-      <span class="prayer-name">ظهر</span>
+      <label>ظهر</label>
       <span id="zuhr-timing">-</span>
       <span id="zuhr-iqamah">-</span>
 
-      <span class="prayer-name">عصر</span>
+      <label>عصر</label>
       <span id="asr-timing">-</span>
       <span id="asr-iqamah">-</span>
 
-      <span class="prayer-name">مغرب</span>
+      <label>مغرب</label>
       <span id="maghrib-timing">-</span>
       <span id="maghrib-iqamah">-</span>
 
-      <span class="prayer-name">عشاء</span>
+      <label>عشاء</label>
       <span id="isha-timing">-</span>
       <span id="isha-iqamah">-</span>
     </div>
@@ -52,10 +52,13 @@
     <hr />
 
     <div class="table" id="other-timings">
-      <span>Sunrise</span>
+      <label class="friday-only hide">Jumah</label>
+      <span class="friday-only hide" id="friday-timing">-</span>
+
+      <label>Sunrise</label>
       <span id="sunrise-timing">-</span>
 
-      <span>Midnight</span>
+      <label>Midnight</label>
       <span id="midnight-timing">-</span>
     </div>
   </main>
