@@ -8,6 +8,12 @@ const asrTimingElement = document.getElementById("asr-timing");
 const maghribTimingElement = document.getElementById("maghrib-timing");
 const ishaTimingElement = document.getElementById("isha-timing");
 
+const fajrIqamahElement = document.getElementById("fajr-iqamah");
+const zuhrIqamahElement = document.getElementById("zuhr-iqamah");
+const asrIqamahElement = document.getElementById("asr-iqamah");
+const maghribIqamahElement = document.getElementById("maghrib-iqamah");
+const ishaIqamahElement = document.getElementById("isha-iqamah");
+
 const sunriseTimingElement = document.getElementById("sunrise-timing");
 const midnightTimingElement = document.getElementById("midnight-timing");
 
@@ -43,25 +49,46 @@ function bind(timings) {
   maghribTimingElement.innerHTML = todayTiming.maghrib;
   ishaTimingElement.innerHTML = todayTiming.isha;
 
+  fajrIqamahElement.innerHTML = todayTiming.iqamah_Fajr;
+  zuhrIqamahElement.innerHTML = todayTiming.iqamah_Zuhr;
+  asrIqamahElement.innerHTML = todayTiming.iqamah_Asr;
+  maghribIqamahElement.innerHTML = todayTiming.iqamah_Maghrib;
+  ishaIqamahElement.innerHTML = todayTiming.iqamah_Isha;
+
   sunriseTimingElement.innerHTML = todayTiming.shouruq;
   midnightTimingElement.innerHTML = getMidnightTime(todayTiming);
 
   // Mark the next prayer time
-  const prayers = [
-    { element: fajrTimingElement, time: parseTime(fajrTimingElement.innerHTML) },
-    { element: zuhrTimingElement, time: parseTime(zuhrTimingElement.innerHTML) },
-    { element: asrTimingElement, time: parseTime(asrTimingElement.innerHTML) },
-    { element: maghribTimingElement, time: parseTime(maghribTimingElement.innerHTML) },
-    { element: ishaTimingElement, time: parseTime(ishaTimingElement.innerHTML) },
-  ];
+  markNextElement([
+    fajrTimingElement,
+    zuhrTimingElement,
+    asrTimingElement,
+    maghribTimingElement,
+    ishaTimingElement,
+  ]);
 
-  const currentNext = prayers.findIndex(p => p.element.classList.contains("next"));
+  // Mark next iqamah time
+  markNextElement([
+    fajrIqamahElement,
+    zuhrIqamahElement,
+    asrIqamahElement,
+    maghribIqamahElement,
+    ishaIqamahElement,
+  ]);
+}
+
+function markNextElement(elements) {
+  const now = new Date();
+  const currentNext = elements.findIndex(e => e.classList.contains("next"));
+
+  const elementsWithTime = elements.map(e => ({ element: e, time: parseTime(e.innerHTML) }));
 
   let nextIndex = -1;
-  for (let i = 0; i < prayers.length; i++) {
-    const prayer = prayers[i];
+  for (let i = 0; i < elementsWithTime.length; i++) {
+    const prayer = elementsWithTime[i];
 
-    if (prayer.time.hours > now.getHours() && prayer.time.minutes > now.getMinutes()) {
+    if (prayer.time.hours > now.getHours() ||
+      (prayer.time.hours == now.getHours() && prayer.time.minutes > now.getMinutes())) {
       nextIndex = i;
       break;
     }
@@ -72,37 +99,9 @@ function bind(timings) {
   }
 
   if (currentNext != nextIndex) {
-    if (currentNext != -1) { prayers[currentNext].element.classList.remove("next"); }
-    prayers[nextIndex].element.classList.add("next");
+    if (currentNext != -1) { elementsWithTime[currentNext].element.classList.remove("next"); }
+    elementsWithTime[nextIndex].element.classList.add("next");
   }
-}
-
-function getMidnightTime(timing) {
-  const sunset = parseTime(timing.maghrib);
-  const fajr = parseTime(timing.fajr);
-
-  let midnightMinutes = (sunset.minutes + fajr.hours) / 2;
-  midnightMinutes -= midnightMinutes % 1;
-
-  let midnightHour = (sunset.hours + fajr.hours + 24) / 2;
-  const hourFraction = midnightHour % 1;
-
-  if (hourFraction != 0) {
-    midnightMinutes += 30;
-    midnightHour -= hourFraction;
-  }
-
-  while (midnightMinutes > 60) {
-    midnightHour++;
-    midnightMinutes -= 60;
-  }
-
-  return `${midnightHour}:${midnightMinutes}`;
-}
-
-function parseTime(time) {
-  const [hours, minutes] = time.split(':');
-  return { hours: Number(hours), minutes: Number(minutes) };
 }
 
 mosque = localStorage.getItem("mosque");

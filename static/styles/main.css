@@ -19,7 +19,7 @@
   padding: 16px;
 
   grid-auto-flow: column;
-  grid-template-rows: 16px 16px;
+  grid-template-rows: repeat(3, 16px);
 
   row-gap: 16px;
   column-gap: 24px;
@@ -31,7 +31,7 @@
 }
 
 #prayer-timings .next,
-#prayer-timings :has(+ .next) {
+.prayer-name:has(+ .next) {
   color: green;
 }
 

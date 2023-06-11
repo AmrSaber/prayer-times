@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Prayer Times - Cambridge</title>
+  <title>Cambridge Prayer Times</title>
 
   <link rel="stylesheet" type="text/css" href="styles/common.css" />
   <link rel="stylesheet" type="text/css" href="styles/main.css" />
@@ -12,7 +12,8 @@
 
 <body>
   <main>
-    <div>Displaying prayer times from <h3 id="mosque-name">...</h3>
+    <div>
+      Displaying prayer times from <h3 id="mosque-name">...</h3>
     </div>
 
     <div id="select-holder">
@@ -23,23 +24,33 @@
 
     <h2>Prayer Times</h2>
     <div class="table" id="prayer-timings">
-      <span>فجر</span>
+      <span></span>
+      <span>أذان</span>
+      <span>إقامة</span>
+
+      <span class="prayer-name">فجر</span>
       <span id="fajr-timing">-</span>
+      <span id="fajr-iqamah">-</span>
 
-      <span>ظهر</span>
+      <span class="prayer-name">ظهر</span>
       <span id="zuhr-timing">-</span>
+      <span id="zuhr-iqamah">-</span>
 
-      <span>عصر</span>
+      <span class="prayer-name">عصر</span>
       <span id="asr-timing">-</span>
+      <span id="asr-iqamah">-</span>
 
-      <span>مغرب</span>
+      <span class="prayer-name">مغرب</span>
       <span id="maghrib-timing">-</span>
+      <span id="maghrib-iqamah">-</span>
 
-      <span>عشاء</span>
+      <span class="prayer-name">عشاء</span>
       <span id="isha-timing">-</span>
+      <span id="isha-iqamah">-</span>
     </div>
 
     <hr />
+
     <div class="table" id="other-timings">
       <span>Sunrise</span>
       <span id="sunrise-timing">-</span>
@@ -54,6 +65,7 @@
   </footer>
 
   <script src="./scripts/services.js"></script>
+  <script src="./scripts/helpers.js"></script>
   <script src="./scripts/main.js"></script>
 </body>
 
