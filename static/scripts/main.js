@@ -2,6 +2,7 @@ let mosque;
 const FRIDAY_INDEX = 5;
 
 const mosqueNameElement = document.getElementById("mosque-name");
+const noonLabelElement = document.querySelector('label.noon');
 
 const fajrTimingElement = document.getElementById("fajr-timing");
 const zuhrTimingElement = document.getElementById("zuhr-timing");
@@ -62,21 +63,17 @@ function bind(timings) {
   midnightTimingElement.innerHTML = getMidnightTime(todayTiming);
 
   if (now.getDay() == FRIDAY_INDEX) {
-    document.querySelectorAll('.friday-only.hide').forEach(e => {
-      e.classList.remove("hide");
-      e.classList.add("show");
-    });
-
+    noonLabelElement.innerHTML = "جمعة";
     zuhrIqamahElement.innerHTML = "-";
   } else {
-    document.querySelectorAll('.friday-only.show').forEach(e => {
-      e.classList.remove("show");
-      e.classList.add("hide");
-    });
+    noonLabelElement.innerHTML = "ظهر";
   }
 
+  // Remove "next" class from existing elements
+  document.querySelectorAll('.next').forEach(e => e.classList.remove('next'));
+
   // Mark the next prayer time
-  markNextElement([
+  findNext([
     fajrTimingElement,
     sunriseTimingElement,
     zuhrTimingElement,
@@ -84,45 +81,16 @@ function bind(timings) {
     maghribTimingElement,
     ishaTimingElement,
     midnightTimingElement,
-  ]);
+  ]).classList.add('next');
 
   // Mark next iqamah time
-  markNextElement([
+  findNext([
     fajrIqamahElement,
     zuhrIqamahElement,
     asrIqamahElement,
     maghribIqamahElement,
     ishaIqamahElement,
-  ]);
-}
-
-function markNextElement(elements) {
-  const now = new Date();
-  const currentNext = elements.findIndex(e => e.classList.contains("next"));
-
-  const elementsWithTime = elements
-    .filter(e => e.innerHTML != "-")
-    .map(e => ({ element: e, time: parseTime(e.innerHTML) }));
-
-  let nextIndex = -1;
-  for (let i = 0; i < elementsWithTime.length; i++) {
-    const prayer = elementsWithTime[i];
-
-    if (prayer.time.hours > now.getHours() ||
-      (prayer.time.hours == now.getHours() && prayer.time.minutes > now.getMinutes())) {
-      nextIndex = i;
-      break;
-    }
-  }
-
-  if (nextIndex == -1) {
-    nextIndex = 0;
-  }
-
-  if (currentNext != nextIndex) {
-    if (currentNext != -1) { elementsWithTime[currentNext].element.classList.remove("next"); }
-    elementsWithTime[nextIndex].element.classList.add("next");
-  }
+  ]).classList.add('next');
 }
 
 mosque = localStorage.getItem("mosque");
@@ -136,7 +104,7 @@ if (mosque == null) {
     .then(() => {
       setInterval(
         () => getTimings().then(bind),
-        60_000
+        60_000,
       );
     });
 }
