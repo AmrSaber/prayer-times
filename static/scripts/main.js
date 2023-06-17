@@ -128,17 +128,19 @@ function updateTimer(nextPrayerTime) {
   const now = new Date();
   let hoursDiff = nextPrayerTime.hours - now.getHours();
   let minutesDiff = nextPrayerTime.minutes - now.getMinutes();
+  let secondsDiff = 0 - now.getSeconds();
 
-  if (now.getSeconds() == 0) {
-    minutesDiff++;
+  while (secondsDiff < 0) {
+    minutesDiff--;
+    secondsDiff += 60;
   }
 
-  if (minutesDiff < 0) {
+  while (minutesDiff < 0) {
     hoursDiff--;
     minutesDiff += 60;
   }
 
-  if (hoursDiff < 0) {
+  while (hoursDiff < 0) {
     hoursDiff += 24;
   }
 
@@ -149,12 +151,8 @@ function updateTimer(nextPrayerTime) {
   }
 
   const hours = String(hoursDiff).padStart(2, 0);
-  const minutes = String(minutesDiff - 1).padStart(2, 0);
-  let seconds = String(60 - now.getSeconds()).padStart(2, 0);
-
-  if (seconds == "60") {
-    seconds = "00";
-  }
+  const minutes = String(minutesDiff).padStart(2, 0);
+  const seconds = String(secondsDiff).padStart(2, 0);
 
   const remainingTime = `${hours}:${minutes}:${seconds}`;
   updateInnerHtml(timeUntilNextPrayer, remainingTime);
