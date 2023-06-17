@@ -124,11 +124,16 @@ function updateTimer(nextPrayerTime) {
   if (nextPrayerTime == null) { return; }
 
   const now = new Date();
-  const hoursDiff = nextPrayerTime.hours - now.getHours();
+  let hoursDiff = nextPrayerTime.hours - now.getHours();
   let minutesDiff = nextPrayerTime.minutes - now.getMinutes();
 
   if (now.getSeconds() == 0) {
     minutesDiff++;
+  }
+
+  if (minutesDiff < 0) {
+    hoursDiff--;
+    minutesDiff += 60;
   }
 
   if (hoursDiff == 0 && minutesDiff <= 5) {
