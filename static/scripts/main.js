@@ -16,9 +16,12 @@ const asrIqamahElement = document.getElementById("asr-iqamah");
 const maghribIqamahElement = document.getElementById("maghrib-iqamah");
 const ishaIqamahElement = document.getElementById("isha-iqamah");
 
-const fridayTimingElement = document.getElementById("friday-timing");
 const sunriseTimingElement = document.getElementById("sunrise-timing");
 const midnightTimingElement = document.getElementById("midnight-timing");
+
+const timerSection = document.getElementById('prayer-timer');
+const nextPrayer = document.getElementById("next-prayer");
+const timeUntilNextPrayer = document.getElementById('time-until-next-prayer');
 
 async function getTimings() {
   const year = new Date().getUTCFullYear();
@@ -44,53 +47,108 @@ function bind(timings) {
 
   const todayTiming = timings.salahTimings.find(t => t.day == today && t.month == thisMonth);
 
-  mosqueNameElement.innerHTML = mosque.name;
+  updateInnerHtml(mosqueNameElement, mosque.name);
 
-  fajrTimingElement.innerHTML = todayTiming.fajr;
-  zuhrTimingElement.innerHTML = todayTiming.zuhr;
-  asrTimingElement.innerHTML = todayTiming.asr;
-  maghribTimingElement.innerHTML = todayTiming.maghrib;
-  ishaTimingElement.innerHTML = todayTiming.isha;
+  updateInnerHtml(fajrTimingElement, todayTiming.fajr);
+  updateInnerHtml(zuhrTimingElement, todayTiming.zuhr);
+  updateInnerHtml(asrTimingElement, todayTiming.asr);
+  updateInnerHtml(maghribTimingElement, todayTiming.maghrib);
+  updateInnerHtml(ishaTimingElement, todayTiming.isha);
 
-  fajrIqamahElement.innerHTML = todayTiming.iqamah_Fajr;
-  zuhrIqamahElement.innerHTML = todayTiming.iqamah_Zuhr;
-  asrIqamahElement.innerHTML = todayTiming.iqamah_Asr;
-  maghribIqamahElement.innerHTML = todayTiming.iqamah_Maghrib;
-  ishaIqamahElement.innerHTML = todayTiming.iqamah_Isha;
+  updateInnerHtml(fajrIqamahElement, todayTiming.iqamah_Fajr);
+  updateInnerHtml(zuhrIqamahElement, todayTiming.iqamah_Zuhr);
+  updateInnerHtml(asrIqamahElement, todayTiming.iqamah_Asr);
+  updateInnerHtml(maghribIqamahElement, todayTiming.iqamah_Maghrib);
+  updateInnerHtml(ishaIqamahElement, todayTiming.iqamah_Isha);
 
-  fridayTimingElement.innerHTML = timings.masjidSettings.jumahTime;
-  sunriseTimingElement.innerHTML = todayTiming.shouruq;
-  midnightTimingElement.innerHTML = getMidnightTime(todayTiming);
+  updateInnerHtml(sunriseTimingElement, todayTiming.shouruq);
+  updateInnerHtml(midnightTimingElement, getMidnightTime(todayTiming));
 
   if (now.getDay() == FRIDAY_INDEX) {
-    noonLabelElement.innerHTML = "جمعة";
-    zuhrIqamahElement.innerHTML = "-";
+    updateInnerHtml(noonLabelElement, "الجمعة");
+    updateInnerHtml(zuhrIqamahElement, "-");
   } else {
-    noonLabelElement.innerHTML = "ظهر";
+    updateInnerHtml(noonLabelElement, "الظهر");
   }
 
-  // Remove "next" class from existing elements
-  document.querySelectorAll('.next').forEach(e => e.classList.remove('next'));
-
   // Mark the next prayer time
-  findNext([
-    fajrTimingElement,
-    sunriseTimingElement,
-    zuhrTimingElement,
-    asrTimingElement,
-    maghribTimingElement,
-    ishaTimingElement,
-    midnightTimingElement,
-  ]).classList.add('next');
+  {
+    const nextTiming = findNext([
+      fajrTimingElement,
+      sunriseTimingElement,
+      zuhrTimingElement,
+      asrTimingElement,
+      maghribTimingElement,
+      ishaTimingElement,
+      midnightTimingElement,
+    ]);
+
+    if (!nextTiming.classList.contains('next')) {
+      // remove "next" from the other timing
+      const currentNext = document.querySelector('.next .timing');
+      if (currentNext != null) {
+        currentNext.classList.remove('next');
+      }
+
+      nextTiming.classList.add('next');
+    }
+
+    // Set next prayer label and time
+    nextPrayer.innerHTML = document.querySelector('label:has(+ .next)').innerHTML;
+    updateTimer(parseTime(nextTiming.innerHTML));
+  }
 
   // Mark next iqamah time
-  findNext([
-    fajrIqamahElement,
-    zuhrIqamahElement,
-    asrIqamahElement,
-    maghribIqamahElement,
-    ishaIqamahElement,
-  ]).classList.add('next');
+  {
+    const nextIqamah = findNext([
+      fajrIqamahElement,
+      zuhrIqamahElement,
+      asrIqamahElement,
+      maghribIqamahElement,
+      ishaIqamahElement,
+    ]);
+
+    if (!nextIqamah.classList.contains('next')) {
+      // remove "next" from the other iqamah
+      const currentNext = document.querySelector('.next .iqamah');
+      if (currentNext != null) {
+        currentNext.classList.remove('next');
+      }
+
+      nextIqamah.classList.add('next');
+    }
+  }
+}
+
+function updateTimer(nextPrayerTime) {
+  if (nextPrayerTime == null) { return; }
+
+  const now = new Date();
+  const hoursDiff = nextPrayerTime.hours - now.getHours();
+  let minutesDiff = nextPrayerTime.minutes - now.getMinutes();
+
+  if (now.getSeconds() == 0) {
+    minutesDiff++;
+  }
+
+  if (hoursDiff == 0 && minutesDiff <= 5) {
+    timeUntilNextPrayer.classList.add('danger');
+  } else {
+    timeUntilNextPrayer.classList.remove('danger');
+  }
+
+  const hours = String(hoursDiff).padStart(2, 0);
+  const minutes = String(minutesDiff - 1).padStart(2, 0);
+  let seconds = String(60 - now.getSeconds()).padStart(2, 0);
+
+  if (seconds == "60") {
+    seconds = "00";
+  }
+
+  const remainingTime = `${hours}:${minutes}:${seconds}`;
+  updateInnerHtml(timeUntilNextPrayer, remainingTime);
+
+  timerSection.classList.remove('invisible');
 }
 
 mosque = localStorage.getItem("mosque");
@@ -101,10 +159,5 @@ if (mosque == null) {
 
   getTimings()
     .then(bind)
-    .then(() => {
-      setInterval(
-        () => getTimings().then(bind),
-        60_000,
-      );
-    });
+    .then(() => setInterval(() => getTimings().then(bind), 500));
 }

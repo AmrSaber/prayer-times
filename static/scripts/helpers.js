@@ -22,6 +22,8 @@ function getMidnightTime(timing) {
 }
 
 function parseTime(time) {
+  if (!/\d{1,2}:\d{1,2}/.test(time)) { return null; }
+
   const [hours, minutes] = time.split(':');
   return { hours: Number(hours), minutes: Number(minutes) };
 }
@@ -63,3 +65,15 @@ function findNext(timeElements) {
   // If no element matches, return first one
   return elements[0].element;
 };
+
+/**
+ * Update element's inner html if it's different from the provided text
+ * 
+ * @param {HTMLElement} element 
+ * @param {String} text 
+ */
+function updateInnerHtml(element, text) {
+  if (element.innerHTML != text) {
+    element.innerHTML = text;
+  }
+}

@@ -37,8 +37,16 @@ main {
   border-radius: 0.5rem;
 }
 
-.hide {
+.hidden {
   display: none;
+}
+
+.invisible {
+  visibility: hidden;
+}
+
+.danger {
+  color: red;
 }
 
 .table {

@@ -23,43 +23,45 @@
     <hr />
 
     <h2>Prayer Times</h2>
+
+    <div id="prayer-timer" class="invisible">
+      <span id="time-until-next-prayer">00:00:00</span> to <label id="next-prayer" class="next">-</label>
+    </div>
+
     <div class="table" id="prayer-timings">
       <span></span>
       <label>أذان</label>
       <label>إقامة</label>
 
-      <label>فجر</label>
-      <span id="fajr-timing">-</span>
-      <span id="fajr-iqamah">-</span>
+      <label>الفجر</label>
+      <span id="fajr-timing" class="timing">-</span>
+      <span id="fajr-iqamah" class="iqamah">-</span>
 
-      <label class="noon">ظهر</label>
-      <span id="zuhr-timing">-</span>
-      <span id="zuhr-iqamah">-</span>
+      <label class="noon">الظهر</label>
+      <span id="zuhr-timing" class="timing">-</span>
+      <span id="zuhr-iqamah" class="iqamah">-</span>
 
-      <label>عصر</label>
-      <span id="asr-timing">-</span>
-      <span id="asr-iqamah">-</span>
+      <label>العصر</label>
+      <span id="asr-timing" class="timing">-</span>
+      <span id="asr-iqamah" class="iqamah">-</span>
 
-      <label>مغرب</label>
-      <span id="maghrib-timing">-</span>
-      <span id="maghrib-iqamah">-</span>
+      <label>المغرب</label>
+      <span id="maghrib-timing" class="timing">-</span>
+      <span id="maghrib-iqamah" class="iqamah">-</span>
 
-      <label>عشاء</label>
-      <span id="isha-timing">-</span>
-      <span id="isha-iqamah">-</span>
+      <label>العشاء</label>
+      <span id="isha-timing" class="timing">-</span>
+      <span id="isha-iqamah" class="iqamah">-</span>
     </div>
 
     <hr />
 
     <div class="table" id="other-timings">
-      <label class="friday-only hide">Jumah</label>
-      <span class="friday-only hide" id="friday-timing">-</span>
-
       <label>Sunrise</label>
-      <span id="sunrise-timing">-</span>
+      <span id="sunrise-timing" class="timing">-</span>
 
       <label>Midnight</label>
-      <span id="midnight-timing">-</span>
+      <span id="midnight-timing" class="timing">-</span>
     </div>
   </main>
 

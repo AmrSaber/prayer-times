@@ -34,6 +34,11 @@ label:has(+ .next) {
   color: green;
 }
 
+#prayer-timer {
+  text-align: center;
+  font-weight: bold;
+}
+
 #other-timings {
   grid-auto-flow: row;
   grid-template-columns: 1fr 1fr;
