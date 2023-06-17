@@ -85,16 +85,18 @@ function bind(timings) {
 
     if (!nextTiming.classList.contains('next')) {
       // remove "next" from the other timing
-      const currentNext = document.querySelector('.next .timing');
+      const currentNext = document.querySelector('.next.timing');
       if (currentNext != null) {
         currentNext.classList.remove('next');
       }
 
       nextTiming.classList.add('next');
+
+      // Set next prayer label
+      nextPrayer.innerHTML = document.querySelector('label:has(+ .next)').innerHTML;
     }
 
-    // Set next prayer label and time
-    nextPrayer.innerHTML = document.querySelector('label:has(+ .next)').innerHTML;
+    // Update timer
     updateTimer(parseTime(nextTiming.innerHTML));
   }
 
@@ -110,7 +112,7 @@ function bind(timings) {
 
     if (!nextIqamah.classList.contains('next')) {
       // remove "next" from the other iqamah
-      const currentNext = document.querySelector('.next .iqamah');
+      const currentNext = document.querySelector('.next.iqamah');
       if (currentNext != null) {
         currentNext.classList.remove('next');
       }
@@ -134,6 +136,10 @@ function updateTimer(nextPrayerTime) {
   if (minutesDiff < 0) {
     hoursDiff--;
     minutesDiff += 60;
+  }
+
+  if (hoursDiff < 0) {
+    hoursDiff += 24;
   }
 
   if (hoursDiff == 0 && minutesDiff <= 5) {
