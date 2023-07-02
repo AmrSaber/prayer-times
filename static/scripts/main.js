@@ -93,7 +93,8 @@ function bind(timings) {
       nextTiming.classList.add('next');
 
       // Set next prayer label
-      nextPrayer.innerHTML = document.querySelector('label:has(+ .next)').innerHTML;
+      const nextPrayerName = document.querySelector('label:has(+ .next)').innerHTML;
+      nextPrayer.innerHTML = `${nextPrayerName} (${nextTiming.innerHTML})`;
     }
 
     // Update timer
