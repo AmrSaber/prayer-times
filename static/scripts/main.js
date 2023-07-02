@@ -144,7 +144,7 @@ function updateTimer(nextPrayerTime) {
     hoursDiff += 24;
   }
 
-  if (hoursDiff == 0 && minutesDiff <= 5) {
+  if (hoursDiff == 0 && minutesDiff < 5) {
     timeUntilNextPrayer.classList.add('danger');
   } else {
     timeUntilNextPrayer.classList.remove('danger');
