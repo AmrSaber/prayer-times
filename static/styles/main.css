@@ -10,8 +10,8 @@
 
 #prayer-timings {
   direction: rtl;
-  margin: 1rem auto;
-  padding: 1rem;
+  margin: 2rem auto;
+  padding: 0 1rem;
 
   grid-auto-flow: column;
   grid-template-rows: repeat(3, 1rem);
@@ -37,6 +37,7 @@ label:has(+ .next) {
 #prayer-timer {
   text-align: center;
   font-weight: bold;
+  margin-block: 2rem;
 }
 
 #other-timings {
