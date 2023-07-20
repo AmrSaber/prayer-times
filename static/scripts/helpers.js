@@ -2,30 +2,34 @@ function getMidnightTime(timing) {
   const sunset = parseTime(timing.maghrib);
   const fajr = parseTime(timing.fajr);
 
-  let midnightMinutes = (sunset.minutes + fajr.hours) / 2;
-  midnightMinutes -= midnightMinutes % 1;
+  let minutes = (sunset.minutes + fajr.hours) / 2;
+  minutes -= minutes % 1;
 
-  let midnightHour = (sunset.hours + fajr.hours + 24) / 2;
-  const hourFraction = midnightHour % 1;
+  let hours = (sunset.hours + fajr.hours + 24) / 2;
+  const hoursFraction = hours % 1;
 
-  if (hourFraction != 0) {
-    midnightMinutes += 30;
-    midnightHour -= hourFraction;
+  // The only possible fraction is 0.5 because of division by 2
+  if (hoursFraction != 0) {
+    minutes += 30;
+    hours -= hoursFraction;
   }
 
-  while (midnightMinutes > 60) {
-    midnightHour++;
-    midnightMinutes -= 60;
+  while (minutes >= 60) {
+    hours++;
+    minutes -= 60;
   }
 
-  return `${midnightHour}:${midnightMinutes}`;
+  while (hours >= 24) {
+    hours -= 24;
+  }
+
+  return `${String(hours).padStart(2, 0)}:${String(minutes).padStart(2, 0)}`;
 }
 
 function parseTime(time) {
   if (!/\d{1,2}:\d{1,2}/.test(time)) { return null; }
-
-  const [hours, minutes] = time.split(':');
-  return { hours: Number(hours), minutes: Number(minutes) };
+  let [hours, minutes] = time.split(':').map(Number);
+  return { hours, minutes };
 }
 
 /**
