@@ -19,35 +19,55 @@ function getMidnightTime(timing) {
     minutes -= 60;
   }
 
-  while (hours >= 24) {
-    hours -= 24;
+  hours %= 24;
+
+  return `${String(hours).padStart(2, 0)}:${String(minutes).padStart(2, 0)}`;
+}
+
+function getLastThirdOfNightTime(timing) {
+  const sunset = parseTime(timing.maghrib);
+  const fajr = parseTime(timing.fajr);
+
+  let thirdMinutes = ((fajr.minutes + 60 - sunset.minutes) % 60) / 3;
+  thirdMinutes -= thirdMinutes % 1; // remove fractions
+
+  let thirdHours = ((fajr.hours + 24 - sunset.hours) % 24) / 3;
+  thirdMinutes += (thirdHours % 1) * 60;
+  thirdHours -= thirdHours % 1;
+
+  let hours = sunset.hours + 2 * thirdHours;
+  let minutes = sunset.minutes + 2 * thirdMinutes;
+
+  while (minutes >= 60) {
+    hours++;
+    minutes -= 60;
   }
+
+  hours %= 24;
 
   return `${String(hours).padStart(2, 0)}:${String(minutes).padStart(2, 0)}`;
 }
 
 function parseTime(time) {
-  if (!/\d{1,2}:\d{1,2}/.test(time)) { return null; }
-  let [hours, minutes] = time.split(':').map(Number);
+  if (!/\d{1,2}:\d{1,2}/.test(time)) return null;
+  let [hours, minutes] = time.split(":").map(Number);
   return { hours, minutes };
 }
 
 /**
  * Finds the HTML element with the content representing the nearest time in the future, or return the first element.
- * 
- * @param {[HTMLElement]} timeElements 
+ *
+ * @param {[HTMLElement]} timeElements
  */
 function findNext(timeElements) {
   const now = new Date();
 
   // Ignore any element that is not time, then map rest to include the parsed time
   const elements = timeElements
-    .filter(e => /^\d{1,2}:\d{1,2}(?::\d{1,2})?$/.test(e.innerHTML))
-    .map(e => ({ element: e, time: parseTime(e.innerHTML) }));
+    .filter((e) => /^\d{1,2}:\d{1,2}(?::\d{1,2})?$/.test(e.innerHTML))
+    .map((e) => ({ element: e, time: parseTime(e.innerHTML) }));
 
-  if (elements.length == 0) {
-    return null;
-  }
+  if (elements.length == 0) return null;
 
   // Sort elements ascending based on their time
   elements.sort((a, b) => {
@@ -60,21 +80,23 @@ function findNext(timeElements) {
 
   // Return first element greater than "now"
   for (const e of elements) {
-    if (e.time.hours > now.getHours() ||
-      (e.time.hours == now.getHours() && e.time.minutes > now.getMinutes())) {
+    if (
+      e.time.hours > now.getHours() ||
+      (e.time.hours == now.getHours() && e.time.minutes > now.getMinutes())
+    ) {
       return e.element;
     }
   }
 
   // If no element matches, return first one
   return elements[0].element;
-};
+}
 
 /**
  * Update element's inner html if it's different from the provided text
- * 
- * @param {HTMLElement} element 
- * @param {String} text 
+ *
+ * @param {HTMLElement} element
+ * @param {String} text
  */
 function updateInnerHtml(element, text) {
   if (element.innerHTML != text) {

@@ -2,7 +2,7 @@ let mosque;
 const FRIDAY_INDEX = 5;
 
 const mosqueNameElement = document.getElementById("mosque-name");
-const noonLabelElement = document.querySelector('label.noon');
+const noonLabelElement = document.querySelector("label.noon");
 
 const fajrTimingElement = document.getElementById("fajr-timing");
 const zuhrTimingElement = document.getElementById("zuhr-timing");
@@ -18,10 +18,11 @@ const ishaIqamahElement = document.getElementById("isha-iqamah");
 
 const sunriseTimingElement = document.getElementById("sunrise-timing");
 const midnightTimingElement = document.getElementById("midnight-timing");
+const lastThirdTiming = document.getElementById("last-third-of-night-timing");
 
-const timerSection = document.getElementById('prayer-timer');
+const timerSection = document.getElementById("prayer-timer");
 const nextPrayer = document.getElementById("next-prayer");
-const timeUntilNextPrayer = document.getElementById('time-until-next-prayer');
+const timeUntilNextPrayer = document.getElementById("time-until-next-prayer");
 
 async function getTimings() {
   const year = new Date().getUTCFullYear();
@@ -38,14 +39,16 @@ async function getTimings() {
   localStorage.setItem(localStorageKey, JSON.stringify(timings));
 
   return timings;
-};
+}
 
 function bind(timings) {
   const now = new Date();
   const today = now.getUTCDate();
   const thisMonth = now.getUTCMonth() + 1;
 
-  const todayTiming = timings.salahTimings.find(t => t.day == today && t.month == thisMonth);
+  const todayTiming = timings.salahTimings.find(
+    (t) => t.day == today && t.month == thisMonth
+  );
 
   updateInnerHtml(mosqueNameElement, mosque.name);
 
@@ -63,6 +66,7 @@ function bind(timings) {
 
   updateInnerHtml(sunriseTimingElement, todayTiming.shouruq);
   updateInnerHtml(midnightTimingElement, getMidnightTime(todayTiming));
+  updateInnerHtml(lastThirdTiming, getLastThirdOfNightTime(todayTiming));
 
   if (now.getDay() == FRIDAY_INDEX) {
     updateInnerHtml(noonLabelElement, "الجمعة");
@@ -83,17 +87,18 @@ function bind(timings) {
       midnightTimingElement,
     ]);
 
-    if (!nextTiming.classList.contains('next')) {
+    if (!nextTiming.classList.contains("next")) {
       // remove "next" from the other timing
-      const currentNext = document.querySelector('.next.timing');
+      const currentNext = document.querySelector(".next.timing");
       if (currentNext != null) {
-        currentNext.classList.remove('next');
+        currentNext.classList.remove("next");
       }
 
-      nextTiming.classList.add('next');
+      nextTiming.classList.add("next");
 
       // Set next prayer label
-      const nextPrayerName = document.querySelector('label:has(+ .next)').innerHTML;
+      const nextPrayerName =
+        document.querySelector("label:has(+ .next)").innerHTML;
       nextPrayer.innerHTML = `${nextPrayerName} (${nextTiming.innerHTML})`;
     }
 
@@ -111,20 +116,22 @@ function bind(timings) {
       ishaIqamahElement,
     ]);
 
-    if (!nextIqamah.classList.contains('next')) {
+    if (!nextIqamah.classList.contains("next")) {
       // remove "next" from the other iqamah
-      const currentNext = document.querySelector('.next.iqamah');
+      const currentNext = document.querySelector(".next.iqamah");
       if (currentNext != null) {
-        currentNext.classList.remove('next');
+        currentNext.classList.remove("next");
       }
 
-      nextIqamah.classList.add('next');
+      nextIqamah.classList.add("next");
     }
   }
 }
 
 function updateTimer(nextPrayerTime) {
-  if (nextPrayerTime == null) { return; }
+  if (nextPrayerTime == null) {
+    return;
+  }
 
   const now = new Date();
   let hoursDiff = nextPrayerTime.hours - now.getHours();
@@ -146,9 +153,9 @@ function updateTimer(nextPrayerTime) {
   }
 
   if (hoursDiff == 0 && minutesDiff < 5) {
-    timeUntilNextPrayer.classList.add('danger');
+    timeUntilNextPrayer.classList.add("danger");
   } else {
-    timeUntilNextPrayer.classList.remove('danger');
+    timeUntilNextPrayer.classList.remove("danger");
   }
 
   const hours = String(hoursDiff).padStart(2, 0);
@@ -158,7 +165,7 @@ function updateTimer(nextPrayerTime) {
   const remainingTime = `${hours}:${minutes}:${seconds}`;
   updateInnerHtml(timeUntilNextPrayer, remainingTime);
 
-  timerSection.classList.remove('invisible');
+  timerSection.classList.remove("invisible");
 }
 
 mosque = localStorage.getItem("mosque");
