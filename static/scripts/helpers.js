@@ -2,7 +2,7 @@ function getMidnightTime(timing) {
   const sunset = parseTime(timing.maghrib);
   const fajr = parseTime(timing.fajr);
 
-  let minutes = (sunset.minutes + fajr.hours) / 2;
+  let minutes = (sunset.minutes + fajr.minutes) / 2;
   minutes -= minutes % 1;
 
   let hours = (sunset.hours + fajr.hours + 24) / 2;
