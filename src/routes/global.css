@@ -1,0 +1,102 @@
+@media screen and (max-width: 460px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+@media screen and (max-width: 380px) {
+  html {
+    font-size: 12px;
+  }
+}
+
+@media screen and (max-width: 350px) {
+  html {
+    font-size: 10px;
+  }
+}
+
+:root {
+  --clickable-color: dodgerblue;
+  --clickable-hover: rgb(10, 73, 136);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #eee;
+
+  font-family: Arial, Helvetica, sans-serif;
+  color: #333;
+}
+
+main {
+  width: fit-content;
+
+  margin-inline: auto;
+  padding: 1rem;
+  
+  background-color: white;
+  border-radius: 0.5rem;
+}
+
+.clickable {
+  color: var(--clickable-color);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.clickable:hover {
+  color: var(--clickable-hover);
+}
+
+.not-button {
+  background-color: transparent;
+  outline: none;
+  border: none;
+  font-size: 1rem;
+}
+
+a,
+a:visited,
+a:active {
+  color: var(--clickable-color);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--clickable-hover);
+}
+
+.danger {
+  color: red;
+}
+
+.centerer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media screen and (prefers-color-scheme: light) {
+  .dark-only {
+    display: none;
+  }
+}
+
+@media screen and (prefers-color-scheme: dark) {
+  body {
+    color: white;
+    background-color: black;
+  }
+  
+  main {
+    background-color: #333;
+  }
+
+  .light-only {
+    display: none;
+  }
+}
