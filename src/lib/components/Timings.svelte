@@ -73,28 +73,15 @@
 
 		// Mark next values
 		const nextPrayer = markImminentElement('.prayer-time');
-		const nextCongregation = markImminentElement('.congregation-time');
+		markImminentElement('.congregation-time');
 
 		nextPrayerTime = new Timing(nextPrayer?.innerHTML);
 		nextPrayerLabel = document.querySelector('.label:has(+ .prayer-time.next)')?.innerHTML;
 
-		const timeToPrayer =
-			nextPrayer != null ? new Timing(nextPrayer?.innerHTML).getTimeUntil() : Infinity;
-
-		const timeToCongregation =
-			nextCongregation != null ? new Timing(nextCongregation.innerHTML).getTimeUntil() : Infinity;
-
-		const timeToNewDay = new Timing('00:00:01').getTimeUntil();
-
-		const closestTime = Math.min(timeToPrayer, timeToCongregation, timeToNewDay);
-
 		updateTimer();
-
-		setTimeout(bind, closestTime);
 	}
 
-	bind();
-	setInterval(updateTimer, 500);
+	setInterval(bind, 500);
 </script>
 
 <div in:fade>
