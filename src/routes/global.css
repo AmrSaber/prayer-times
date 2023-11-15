@@ -37,7 +37,7 @@ main {
 
   margin-inline: auto;
   padding: 1rem;
-  
+
   background-color: white;
   border-radius: 0.5rem;
 }
@@ -91,7 +91,7 @@ a:hover {
     color: white;
     background-color: black;
   }
-  
+
   main {
     background-color: #333;
   }
