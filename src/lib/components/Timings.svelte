@@ -8,6 +8,7 @@
 	import { getLastThirdOfNight, getMidnight } from '$lib/utils';
 	import { markImminentElement } from '$lib/helpers';
 	import { fade } from 'svelte/transition';
+	import Switch from './Switch.svelte';
 
 	let dayTimings: DayTimings | null = null;
 	$: midnightTime = getMidnight(dayTimings);
@@ -17,6 +18,12 @@
 	let nextPrayerLabel: string | undefined;
 	let timeUntilNextPrayer: Timing | undefined;
 	let isImminent = false;
+
+	// TODO save in local storage
+	let notificationsEnabled = false;
+	$: {
+		if (notificationsEnabled) Notification.requestPermission();
+	}
 
 	function updateTimer() {
 		if (nextPrayerTime == null) return;
@@ -91,6 +98,12 @@
 	<div id="select-holder">
 		<button on:click={() => ($selectedMosque = null)} class="clickable not-button"> change </button>
 	</div>
+
+	<!-- svelte-ignore a11y-label-has-associated-control -->
+	<label class="notifications-control">
+		<Switch --size="0.6em" bind:checked={notificationsEnabled} />
+		<span>Notifications</span>
+	</label>
 
 	<hr />
 
@@ -233,5 +246,10 @@
 		margin-top: 2rem;
 
 		gap: 0.5rem 1rem;
+	}
+
+	.notifications-control span {
+		font-size: 0.8rem;
+		vertical-align: -0.4rem;
 	}
 </style>
