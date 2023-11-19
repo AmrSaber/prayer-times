@@ -12,6 +12,12 @@ const ASSETS = [
 	...files // everything in `static`
 ];
 
+const EXCLUDED_CACHE_PATHS = [
+	// Never cache time request, its caching is handled inside the app
+	'TimingsInfoScreen/GetMasjidTimings',
+	'manifest.json'
+];
+
 self.addEventListener('install', (event) => {
 	// Create a new cache and add all files to it
 	async function addFilesToCache() {
@@ -42,8 +48,9 @@ self.addEventListener('fetch', (event) => {
 		const url = new URL(event.request.url);
 		const cache = await caches.open(CACHE);
 
-		// Never cache time request, its caching is handled inside the app
-		if (url.pathname.includes('TimingsInfoScreen/GetMasjidTimings')) return fetch(event.request);
+		// If url path matches an excluded path, then always fetch
+		const isExcludedResource = EXCLUDED_CACHE_PATHS.some((path) => url.pathname.includes(path));
+		if (isExcludedResource) return fetch(event.request);
 
 		// `build`/`files` can always be served from the cache
 		if (ASSETS.includes(url.pathname)) return cache.match(url.pathname);
