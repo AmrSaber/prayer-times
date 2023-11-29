@@ -2,9 +2,11 @@
 	import { fade } from 'svelte/transition';
 	import Loader from './Loader.svelte';
 	import { selectedMosque } from '$lib/stores';
-	import { fetchMosques } from '$lib/api';
+	import { getMosques } from '$lib/api';
 
-	let mosquesPromise = fetchMosques();
+	const UK_ID = 53;
+	const CAMBRIDGE_ID = 20245;
+	let mosquesPromise = getMosques(UK_ID, CAMBRIDGE_ID);
 </script>
 
 <div in:fade>

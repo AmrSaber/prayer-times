@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { tick } from 'svelte';
 	import Loader from './Loader.svelte';
-	import { fetchTimings } from '$lib/api';
+	import { getTimings } from '$lib/api';
 	import { selectedMosque } from '$lib/stores';
 	import { Timing } from '$lib/types';
 	import type { DayTimings } from '$lib/types/pure';
@@ -32,7 +32,7 @@
 	}
 
 	async function bind() {
-		const response = await fetchTimings($selectedMosque?.guidId!);
+		const response = await getTimings($selectedMosque?.guidId!);
 
 		const now = new Date();
 		const today = now.getUTCDate();
@@ -82,6 +82,7 @@
 	}
 
 	setInterval(bind, 500);
+	bind();
 </script>
 
 <div in:fade>

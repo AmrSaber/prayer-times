@@ -1,1 +1,1 @@
-export * from "./mosque";
+export * from './persistent';

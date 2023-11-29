@@ -1,4 +1,6 @@
 import type {
+	City,
+	Country,
 	IqamahTimings,
 	JumahSalahIqamahTiming,
 	MasjidDetails,
@@ -6,11 +8,10 @@ import type {
 	Mosque,
 	SalahTiming
 } from './types/pure';
+import { cacheFunc, cacheFuncAsync } from './utils';
+import { InMemoryCache, LocalStorageCache } from './utils/cache';
 
 const BASE_URL = 'https://time.my-masjid.com/api';
-
-const UK_ID = '53';
-const CAMBRIDGE_ID = '20245';
 
 // Not currently used, but here for reference
 export type Response<T> = {
@@ -29,36 +30,53 @@ export type TimingsModel = {
 	lastUpdatedAt: string;
 };
 
-// In-memory cache
-const cache: Record<string, unknown> = {};
+export async function getCountries(): Promise<Country[]> {
+	return cacheFunc(InMemoryCache, 'countries', async function fetchCountries() {
+		const response = await fetch(`${BASE_URL}/Country/GetAllCountries`, {
+			headers: { 'Content-Type': 'application/json' }
+		});
 
-export async function fetchMosques(): Promise<Mosque[]> {
-	const cacheKey = 'mosques';
-	if (cache[cacheKey] == null) {
-		const response = await fetch(
-			`${BASE_URL}/Masjid/SearchMasjidByLocation?CountryId=${UK_ID}&CityId=${CAMBRIDGE_ID}`,
-			{ headers: { 'Content-Type': 'application/json' } }
-		);
-
-		cache[cacheKey] = await response.json().then((d) => d.model as Mosque[]);
-	}
-
-	return cache[cacheKey] as Mosque[];
+		return await response.json().then((d) => d.model as Country[]);
+	});
 }
 
-export async function fetchTimings(mosqueId: string): Promise<TimingsModel> {
+export async function getCities(countryId: number): Promise<City[]> {
+	return cacheFunc(InMemoryCache, `countries:${countryId}:cities`, async function fetchCities() {
+		const response = await fetch(`${BASE_URL}/City/GetCitiesByCountryId?CountryId=${countryId}`, {
+			headers: { 'Content-Type': 'application/json' }
+		});
+
+		return await response.json().then((d) => d.model as City[]);
+	});
+}
+
+export async function getMosques(countryId: number, cityId: number): Promise<Mosque[]> {
+	return cacheFunc(
+		InMemoryCache,
+		`countries:${countryId}:cities:${cityId}:mosques`,
+		async function fetchMosques() {
+			const response = await fetch(
+				`${BASE_URL}/Masjid/SearchMasjidByLocation?CountryId=${countryId}&CityId=${cityId}`,
+				{ headers: { 'Content-Type': 'application/json' } }
+			);
+
+			return await response.json().then((d) => d.model as Mosque[]);
+		}
+	);
+}
+
+export async function getTimings(mosqueId: string): Promise<TimingsModel> {
 	const thisYear = new Date().getFullYear();
-	const cacheKey = `timings::${thisYear}::${mosqueId}`;
+	return cacheFuncAsync(
+		LocalStorageCache,
+		`timings::${thisYear}::${mosqueId}`,
+		async function fetchTimings() {
+			const response = await fetch(
+				`${BASE_URL}/TimingsInfoScreen/GetMasjidTimings?GuidId=${mosqueId}`,
+				{ headers: { 'Content-Type': 'application/json' } }
+			);
 
-	if (localStorage.getItem(cacheKey) == null) {
-		const response = await fetch(
-			`${BASE_URL}/TimingsInfoScreen/GetMasjidTimings?GuidId=${mosqueId}`
-		);
-
-		const data = await response.json().then((d) => d.model as TimingsModel);
-
-		localStorage.setItem(cacheKey, JSON.stringify(data));
-	}
-
-	return JSON.parse(localStorage.getItem(cacheKey)!);
+			return await response.json().then((d) => d.model as TimingsModel);
+		}
+	);
 }
