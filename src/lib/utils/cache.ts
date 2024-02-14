@@ -1,3 +1,5 @@
+export type CachedMeta = { staleAt?: number; expireAt?: number };
+
 export type Cache = {
 	has: (key: string) => boolean;
 	set: (key: string, value: unknown) => void;

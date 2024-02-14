@@ -1,5 +1,15 @@
 <script>
 	import './global.css';
+
+	// Reset local storage if version doesn't match
+	const LOCAL_STORAGE_VERSION = 1;
+	const versionKey = 'local-storage-version';
+
+	const savedVersion = Number(localStorage.getItem(versionKey) ?? -1);
+	if (savedVersion != LOCAL_STORAGE_VERSION) {
+		localStorage.clear();
+		localStorage.setItem(versionKey, String(LOCAL_STORAGE_VERSION));
+	}
 </script>
 
 <svelte:head>
