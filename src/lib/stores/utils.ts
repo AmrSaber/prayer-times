@@ -7,6 +7,11 @@ export function createPersistentStore<T>(persistanceKey: string, initialValue?: 
 
 	const { set, subscribe } = writable<T | undefined | null>(initial);
 
+	window.addEventListener('storage', (event) => {
+		if (event.key !== persistanceKey) return;
+		set(LocalStorageCache.get(persistanceKey) as T);
+	});
+
 	return {
 		set(value: T | undefined | null) {
 			set(value);
