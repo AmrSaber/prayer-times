@@ -1,18 +1,19 @@
-export type CachedMeta = { staleAt?: number; expireAt?: number };
+export type CachedMeta = { expiresAt?: number };
 
 export type Cache = {
 	has: (key: string) => boolean;
 	set: (key: string, value: unknown) => void;
 	get: (key: string) => unknown;
+	delete: (key: string) => void;
 };
 
 export const LocalStorageCache: Cache = {
-	has(key: string) {
-		return localStorage.getItem(key) != null;
-	},
-
 	set(key: string, value: unknown) {
 		localStorage.setItem(key, JSON.stringify(value));
+	},
+
+	delete(key: string) {
+		localStorage.removeItem(key);
 	},
 
 	get(key: string) {
@@ -20,11 +21,20 @@ export const LocalStorageCache: Cache = {
 		if (savedString == null) return undefined;
 
 		try {
-			return JSON.parse(savedString);
+			const value = JSON.parse(savedString) as CachedMeta;
+
+			if (value.expiresAt != null && value.expiresAt <= new Date().valueOf()) {
+				this.delete(key);
+				return undefined;
+			}
+
+			return value;
 		} catch {
 			return undefined;
 		}
+	},
+
+	has(key: string) {
+		return this.get(key) != null;
 	}
 };
-
-export const InMemoryCache: Cache = new Map<string, unknown>();

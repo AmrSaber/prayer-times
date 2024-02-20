@@ -1,44 +1,48 @@
 <script lang="ts">
 	import { tick } from 'svelte';
 	import Loader from './Loader.svelte';
-	import { getTimings } from '$lib/api';
+	import { getTimings } from '$lib/services';
 	import { selectedMosque } from '$lib/stores';
 	import { Timing } from '$lib/types';
 	import type { DayTimings } from '$lib/types/pure';
 	import { getLastThirdOfNight, getMidnight } from '$lib/utils';
 	import { markImminentElement } from '$lib/helpers';
 	import { fade } from 'svelte/transition';
+	import { LocalStorageCache } from '$lib/utils/cache';
+	import type { TimingsModel } from '$lib/api';
 
 	let dayTimings: DayTimings | null = null;
 	$: midnightTime = getMidnight(dayTimings);
 	$: lastThirdTime = getLastThirdOfNight(dayTimings);
+
+	$: mosqueId = $selectedMosque?.guidId!;
+	$: timingsCacheKey = `mosques::${mosqueId}::timings`;
 
 	let nextPrayerTime: Timing | undefined;
 	let nextPrayerLabel: string | undefined;
 	let timeUntilNextPrayer: Timing | undefined;
 	let isImminent = false;
 
-	function updateTimer() {
-		if (nextPrayerTime == null) return;
-
-		const now = new Date();
-		timeUntilNextPrayer = new Timing();
-		timeUntilNextPrayer.hours = nextPrayerTime.hours - now.getHours();
-		timeUntilNextPrayer.minutes = nextPrayerTime.minutes - now.getMinutes();
-		timeUntilNextPrayer.seconds = nextPrayerTime.seconds - now.getSeconds();
-
-		timeUntilNextPrayer.normalize();
-		isImminent = timeUntilNextPrayer.hours == 0 && timeUntilNextPrayer.minutes < 5;
+	async function cacheTimings() {
+		const timings = await getTimings(mosqueId);
+		LocalStorageCache.set(timingsCacheKey, timings);
 	}
 
 	async function bind() {
-		const response = await getTimings($selectedMosque?.guidId!);
+		if (!LocalStorageCache.has(timingsCacheKey)) {
+			await cacheTimings();
+		} else {
+			// Revalidate in the background
+			cacheTimings();
+		}
+
+		const timings = LocalStorageCache.get(timingsCacheKey) as TimingsModel;
 
 		const now = new Date();
 		const today = now.getUTCDate();
 		const thisMonth = now.getUTCMonth() + 1;
 
-		const todayTiming = response.salahTimings.find((t) => t.day == today && t.month == thisMonth);
+		const todayTiming = timings.salahTimings.find((t) => t.day == today && t.month == thisMonth);
 
 		if (todayTiming == null) {
 			throw new Error("could not find today's timing");
@@ -79,10 +83,25 @@
 		nextPrayerLabel = document.querySelector('.label:has(+ .prayer-time.next)')?.innerHTML;
 
 		updateTimer();
+
+		setTimeout(bind, 500);
 	}
 
-	setInterval(bind, 500);
-	bind();
+	function updateTimer() {
+		if (nextPrayerTime == null) return;
+
+		const now = new Date();
+		timeUntilNextPrayer = new Timing();
+		timeUntilNextPrayer.hours = nextPrayerTime.hours - now.getHours();
+		timeUntilNextPrayer.minutes = nextPrayerTime.minutes - now.getMinutes();
+		timeUntilNextPrayer.seconds = nextPrayerTime.seconds - now.getSeconds();
+
+		timeUntilNextPrayer.normalize();
+		isImminent = timeUntilNextPrayer.hours == 0 && timeUntilNextPrayer.minutes < 5;
+	}
+
+	// Bind after all global variables have been initialized
+	tick().then(bind);
 </script>
 
 <div in:fade>
@@ -105,9 +124,12 @@
 		<div id="prayer-timer">
 			<span class:danger={isImminent}>{timeUntilNextPrayer?.format(true)}</span>
 			to
-			<span class="label next">
-				{nextPrayerLabel} ({nextPrayerTime?.format()})
-			</span>
+			{#key nextPrayerLabel}
+				<span class="label next">
+					{nextPrayerLabel}
+					({nextPrayerTime?.format()})
+				</span>
+			{/key}
 		</div>
 
 		<div class="table" id="prayer-timings">

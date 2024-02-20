@@ -2,7 +2,7 @@
 	import { fade } from 'svelte/transition';
 	import Loader from './Loader.svelte';
 	import { selectedMosque } from '$lib/stores';
-	import { getMosques } from '$lib/api';
+	import { getMosques } from '$lib/services';
 
 	const UK_ID = 53;
 	const CAMBRIDGE_ID = 20245;

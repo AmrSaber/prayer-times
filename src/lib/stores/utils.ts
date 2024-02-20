@@ -1,27 +1,16 @@
+import { LocalStorageCache } from '$lib/utils/cache';
 import { writable } from 'svelte/store';
 
 export function createPersistentStore<T>(persistanceKey: string, initialValue?: T) {
-	let persistedValue: T | undefined;
+	if (!LocalStorageCache.has(persistanceKey)) LocalStorageCache.set(persistanceKey, initialValue);
+	const initial = LocalStorageCache.get(persistanceKey) as T | undefined;
 
-	const savedString = localStorage.getItem(persistanceKey);
-	if (savedString != null) {
-		try {
-			persistedValue = JSON.parse(savedString);
-		} catch {
-			// nothing, leave it undefined
-		}
-	}
-
-	const { set, subscribe } = writable<T | undefined | null>(persistedValue ?? initialValue);
-
-	subscribe((value) => {
-		localStorage.setItem(persistanceKey, JSON.stringify(value));
-	});
+	const { set, subscribe } = writable<T | undefined | null>(initial);
 
 	return {
 		set(value: T | undefined | null) {
 			set(value);
-			localStorage.setItem(persistanceKey, JSON.stringify(value));
+			LocalStorageCache.set(persistanceKey, value);
 		},
 		subscribe
 	};
