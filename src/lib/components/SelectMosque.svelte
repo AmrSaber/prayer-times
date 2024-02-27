@@ -1,27 +1,29 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
 	import Loader from './Loader.svelte';
-	import { selectedMosque } from '$lib/stores';
+	import { selectedLanguage, selectedMosque } from '$lib/stores';
 	import { getMosques } from '$lib/services';
 	import Spacer from './spacer.svelte';
+	import Title from './Title.svelte';
+	import { getTranslator } from '$lib/i18n';
+	import type { Language } from '$lib/i18n/enums';
 
 	const UK_ID = 53;
 	const CAMBRIDGE_ID = 20245;
 	let mosquesPromise = getMosques(UK_ID, CAMBRIDGE_ID);
+
+	$: t = getTranslator($selectedLanguage as Language);
 </script>
 
 <div in:fade>
-	<h2>Prayer Times</h2>
-
-	<hr />
-	<Spacer />
+	<Title />
 
 	{#await mosquesPromise}
 		<div class="load-container centerer">
 			<Loader />
 		</div>
 	{:then mosques}
-		<div>Select mosque in Cambridge:</div>
+		<div>{t('select-mosque-in')} Cambridge:</div>
 		<ul>
 			{#each mosques as mosque (mosque.id)}
 				<li class="clickable">

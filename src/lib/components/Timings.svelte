@@ -2,7 +2,7 @@
 	import { tick } from 'svelte';
 	import Loader from './Loader.svelte';
 	import { getTimings } from '$lib/services';
-	import { selectedMosque } from '$lib/stores';
+	import { selectedLanguage, selectedMosque } from '$lib/stores';
 	import { Timing } from '$lib/types';
 	import type { DayTimings } from '$lib/types/pure';
 	import { getLastThirdOfNight, getMidnight } from '$lib/utils';
@@ -11,6 +11,9 @@
 	import { LocalStorageCache } from '$lib/utils/cache';
 	import type { TimingsModel } from '$lib/api';
 	import Spacer from './spacer.svelte';
+	import { getTranslator } from '$lib/i18n';
+	import Title from './Title.svelte';
+	import type { Language } from '$lib/i18n/enums';
 
 	let dayTimings: DayTimings | null = null;
 	$: midnightTime = getMidnight(dayTimings);
@@ -103,18 +106,20 @@
 
 	// Bind after all global variables have been initialized
 	tick().then(bind);
+
+	$: t = getTranslator($selectedLanguage as Language);
 </script>
 
 <div in:fade>
-	<h2>Prayer Times</h2>
+	<Title />
 
-	<hr />
-
-	<div>Displaying prayer times from</div>
+	<div>{t('displaying-from')}</div>
 	<h3>{$selectedMosque?.name}</h3>
 
 	<div id="select-holder">
-		<button on:click={() => ($selectedMosque = null)} class="clickable not-button"> change </button>
+		<button on:click={() => ($selectedMosque = null)} class="clickable not-button">
+			{t('change')}
+		</button>
 	</div>
 
 	<Spacer />
@@ -126,7 +131,7 @@
 	{:else}
 		<div id="prayer-timer">
 			<span class:danger={isImminent}>{timeUntilNextPrayer?.format(true)}</span>
-			to
+			{t('to')}
 			{#key nextPrayerLabel}
 				<span class="label next">
 					{nextPrayerLabel}
@@ -139,34 +144,34 @@
 			<hr class="separator" />
 
 			<span />
-			<span>Adhan</span>
-			<span>Iqamah</span>
+			<span>{t('azan')}</span>
+			<span>{t('iqamah')}</span>
 
-			<span class="label">Fajr</span>
+			<span class="label">{t('fajr')}</span>
 			<span class="prayer-time">{dayTimings?.fajr.start.format()}</span>
 			<span class="congregation-time">
 				{dayTimings?.fajr.congregation.format()}
 			</span>
 
-			<span class="label">Dhuhr</span>
+			<span class="label">{t('zuhr')}</span>
 			<span class="prayer-time">{dayTimings?.zuhr.start.format()}</span>
 			<span class="congregation-time">
 				{dayTimings?.zuhr.congregation.format()}
 			</span>
 
-			<span class="label">Asr</span>
+			<span class="label">{t('asr')}</span>
 			<span class="prayer-time">{dayTimings?.asr.start.format()}</span>
 			<span class="congregation-time">
 				{dayTimings?.asr.congregation.format()}
 			</span>
 
-			<span class="label">Maghrib</span>
+			<span class="label">{t('maghrib')}</span>
 			<span class="prayer-time">{dayTimings?.sunset.start.format()}</span>
 			<span class="congregation-time">
 				{dayTimings?.sunset.congregation.format()}
 			</span>
 
-			<span class="label">Isha</span>
+			<span class="label">{t('isha')}</span>
 			<span class="prayer-time">{dayTimings?.isha.start.format()}</span>
 			<span class="congregation-time">
 				{dayTimings?.isha.congregation.format()}
@@ -176,13 +181,13 @@
 		<Spacer />
 
 		<div class="table" id="other-timings">
-			<span class="label">Sunrise</span>
+			<span class="label">{t('sunrise')}</span>
 			<span class="prayer-time">{dayTimings?.sunrise.format()}</span>
 
-			<span class="label">Midnight</span>
+			<span class="label">{t('midnight')}</span>
 			<span class="prayer-time">{midnightTime?.format()}</span>
 
-			<span class="label">Last third of night</span>
+			<span class="label">{t('last-third-of-night')}</span>
 			<span>{lastThirdTime?.format()}</span>
 		</div>
 	{/if}

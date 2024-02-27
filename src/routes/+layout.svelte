@@ -1,4 +1,7 @@
-<script>
+<script lang="ts">
+	import { getTranslator } from '$lib/i18n';
+	import { Language } from '$lib/i18n/enums';
+	import { selectedLanguage } from '$lib/stores';
 	import './global.css';
 
 	// Reset local storage if version doesn't match
@@ -10,6 +13,8 @@
 		localStorage.clear();
 		localStorage.setItem(versionKey, String(LOCAL_STORAGE_VERSION));
 	}
+
+	$: t = getTranslator($selectedLanguage as Language);
 </script>
 
 <svelte:head>
@@ -26,7 +31,7 @@
 
 	<link rel="manifest" href="manifest.json" />
 
-	<title>Prayer Times</title>
+	<title>{t('title')}</title>
 </svelte:head>
 
 <slot />
@@ -38,15 +43,30 @@
 	</a>
 	・
 	<span class="powered-by">
-		Powered by <a href="https://my-masjid.com" target="_blank">my-masjid.com</a>
+		{t('powered-by')} <a href="https://my-masjid.com" target="_blank">my-masjid.com</a>
 	</span>
 </footer>
+
+{#if $selectedLanguage === Language.AR}
+	<style>
+		body {
+			direction: rtl;
+		}
+	</style>
+{/if}
 
 <style>
 	footer {
 		position: fixed;
-		bottom: 0.5rem;
-		right: 1rem;
+		bottom: 0;
+
+		padding-block: 0.5rem;
+		padding-inline: 2rem;
+
+		width: 100%;
+		display: flex;
+		justify-content: end;
+		align-items: center;
 	}
 
 	footer .powered-by {
