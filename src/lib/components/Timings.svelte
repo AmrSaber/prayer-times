@@ -63,7 +63,7 @@
 				congregation: new Timing(todayTiming.iqamah_Zuhr)
 			},
 			asr: {
-				start: new Timing(todayTiming.asr),
+				start: new Timing('20:27'),
 				congregation: new Timing(todayTiming.iqamah_Asr)
 			},
 			sunset: {
@@ -200,6 +200,7 @@
 	h3 {
 		margin: 0;
 		margin-top: 0.5rem;
+		text-align: center;
 	}
 
 	#select-holder {
