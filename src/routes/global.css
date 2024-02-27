@@ -1,3 +1,10 @@
+@font-face {
+  font-family: Almarai;
+  src:
+    url('/fonts/Almarai-Regular.ttf') format('truetype'),
+    url('/fonts/Almarai-Bold.ttf') format('truetype');
+}
+
 @media screen and (max-width: 460px) {
   html {
     font-size: 14px;

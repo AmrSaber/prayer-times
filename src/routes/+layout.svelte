@@ -51,6 +51,7 @@
 	<style>
 		body {
 			direction: rtl;
+			font-family: 'Almarai', Arial, Helvetica, sans-serif;
 		}
 	</style>
 {/if}

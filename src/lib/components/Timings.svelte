@@ -108,6 +108,9 @@
 	tick().then(bind);
 
 	$: t = getTranslator($selectedLanguage as Language);
+
+	// Re-bind on language change so that any saved string is localized
+	selectedLanguage.subscribe(bind);
 </script>
 
 <div in:fade>
@@ -245,11 +248,10 @@
 	:global(.next),
 	.label:has(+ .next) {
 		color: var(--accent);
-		transform: scale(1.075);
 	}
 
 	span {
-		transition: transform 0.25s, color 0.25s;
+		transition: color 0.25s;
 	}
 
 	#prayer-timer {
