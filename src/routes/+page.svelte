@@ -7,12 +7,6 @@
 <main>
 	{#if $selectedMosque == null}
 		<SelectMosque />
-
-		<style>
-			main {
-				padding: 0.5rem 2rem;
-			}
-		</style>
 	{:else}
 		<Timings />
 	{/if}

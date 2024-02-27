@@ -3,6 +3,7 @@
 	import Loader from './Loader.svelte';
 	import { selectedMosque } from '$lib/stores';
 	import { getMosques } from '$lib/services';
+	import Spacer from './spacer.svelte';
 
 	const UK_ID = 53;
 	const CAMBRIDGE_ID = 20245;
@@ -10,7 +11,11 @@
 </script>
 
 <div in:fade>
-	<h1>Prayer Times</h1>
+	<h2>Prayer Times</h2>
+
+	<hr />
+	<Spacer />
+
 	{#await mosquesPromise}
 		<div class="load-container centerer">
 			<Loader />
@@ -35,6 +40,11 @@
 <style>
 	.load-container {
 		padding: 2em;
+	}
+
+	ul {
+		padding-inline-start: 2rem;
+		margin-block: 0.5rem;
 	}
 
 	li {

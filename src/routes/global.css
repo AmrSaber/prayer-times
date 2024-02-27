@@ -19,6 +19,7 @@
 :root {
   --clickable-color: dodgerblue;
   --clickable-hover: rgb(10, 73, 136);
+  --accent: rgb(25, 121, 177);
 }
 
 * {
@@ -26,26 +27,22 @@
 }
 
 body {
-  background-color: #eee;
-
   font-family: Arial, Helvetica, sans-serif;
   color: #333;
+  background-color: #fdfdfd;
 }
 
 main {
   width: fit-content;
-
   margin-inline: auto;
-  padding: 1rem;
-
-  background-color: white;
-  border-radius: 0.5rem;
+  padding-inline: 1.5rem;
 }
 
 .clickable {
   color: var(--clickable-color);
   text-decoration: none;
   cursor: pointer;
+  padding: 0.5rem;
 }
 
 .clickable:hover {
@@ -89,11 +86,7 @@ a:hover {
 @media screen and (prefers-color-scheme: dark) {
   body {
     color: white;
-    background-color: black;
-  }
-
-  main {
-    background-color: #333;
+    background-color: #222;
   }
 
   .light-only {

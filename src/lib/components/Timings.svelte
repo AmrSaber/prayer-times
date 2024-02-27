@@ -10,6 +10,7 @@
 	import { fade } from 'svelte/transition';
 	import { LocalStorageCache } from '$lib/utils/cache';
 	import type { TimingsModel } from '$lib/api';
+	import Spacer from './spacer.svelte';
 
 	let dayTimings: DayTimings | null = null;
 	$: midnightTime = getMidnight(dayTimings);
@@ -105,22 +106,24 @@
 </script>
 
 <div in:fade>
+	<h2>Prayer Times</h2>
+
+	<hr />
+
 	<div>Displaying prayer times from</div>
-	<h3 id="mosque-name">{$selectedMosque?.name}</h3>
+	<h3>{$selectedMosque?.name}</h3>
 
 	<div id="select-holder">
 		<button on:click={() => ($selectedMosque = null)} class="clickable not-button"> change </button>
 	</div>
 
-	<hr />
+	<Spacer />
 
 	{#if dayTimings == null}
 		<div class="loader-container centerer">
 			<Loader />
 		</div>
 	{:else}
-		<h2>Prayer Times</h2>
-
 		<div id="prayer-timer">
 			<span class:danger={isImminent}>{timeUntilNextPrayer?.format(true)}</span>
 			to
@@ -133,42 +136,44 @@
 		</div>
 
 		<div class="table" id="prayer-timings">
-			<span />
-			<span>أذان</span>
-			<span>إقامة</span>
+			<hr class="separator" />
 
-			<span class="label">الفجر</span>
+			<span />
+			<span>Adhan</span>
+			<span>Iqamah</span>
+
+			<span class="label">Fajr</span>
 			<span class="prayer-time">{dayTimings?.fajr.start.format()}</span>
 			<span class="congregation-time">
 				{dayTimings?.fajr.congregation.format()}
 			</span>
 
-			<span class="label">الظهر</span>
+			<span class="label">Dhuhr</span>
 			<span class="prayer-time">{dayTimings?.zuhr.start.format()}</span>
 			<span class="congregation-time">
 				{dayTimings?.zuhr.congregation.format()}
 			</span>
 
-			<span class="label">العصر</span>
+			<span class="label">Asr</span>
 			<span class="prayer-time">{dayTimings?.asr.start.format()}</span>
 			<span class="congregation-time">
 				{dayTimings?.asr.congregation.format()}
 			</span>
 
-			<span class="label">المغرب</span>
+			<span class="label">Maghrib</span>
 			<span class="prayer-time">{dayTimings?.sunset.start.format()}</span>
 			<span class="congregation-time">
 				{dayTimings?.sunset.congregation.format()}
 			</span>
 
-			<span class="label">العشاء</span>
+			<span class="label">Isha</span>
 			<span class="prayer-time">{dayTimings?.isha.start.format()}</span>
 			<span class="congregation-time">
 				{dayTimings?.isha.congregation.format()}
 			</span>
 		</div>
 
-		<hr />
+		<Spacer />
 
 		<div class="table" id="other-timings">
 			<span class="label">Sunrise</span>
@@ -184,12 +189,7 @@
 </div>
 
 <style>
-	h2 {
-		margin: 1rem;
-	}
-
-	#mosque-name {
-		color: cornflowerblue;
+	h3 {
 		margin: 0;
 	}
 
@@ -212,12 +212,11 @@
 	}
 
 	#prayer-timings {
-		direction: rtl;
-		margin: 2rem auto;
+		margin: 2rem 1.5rem;
 		padding: 0 1rem;
 
 		grid-auto-flow: column;
-		grid-template-rows: repeat(3, 1rem);
+		grid-template-rows: repeat(4, 1rem);
 
 		row-gap: 1rem;
 		column-gap: 1.5rem;
@@ -228,13 +227,19 @@
 		justify-content: center;
 	}
 
+	#prayer-timings > .separator {
+		grid-column: 1 / span 6;
+		grid-row: 2;
+		width: 100%;
+	}
+
 	.label {
 		font-weight: bold;
 	}
 
 	:global(.next),
 	.label:has(+ .next) {
-		color: green;
+		color: var(--accent);
 		transform: scale(1.075);
 	}
 
