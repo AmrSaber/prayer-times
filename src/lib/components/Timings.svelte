@@ -181,7 +181,7 @@
 			</span>
 		</div>
 
-		<Spacer />
+		<Spacer size="2rem" />
 
 		<div class="table" id="other-timings">
 			<span class="label">{t('sunrise')}</span>
@@ -199,6 +199,7 @@
 <style>
 	h3 {
 		margin: 0;
+		margin-top: 0.5rem;
 	}
 
 	#select-holder {
@@ -263,10 +264,6 @@
 	#other-timings {
 		grid-auto-flow: row;
 		grid-template-columns: 1fr 1fr;
-
-		margin: 1rem;
-		margin-top: 2rem;
-
 		gap: 0.5rem 1rem;
 	}
 </style>

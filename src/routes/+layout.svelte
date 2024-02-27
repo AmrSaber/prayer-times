@@ -64,7 +64,7 @@
 		padding-block: 0.5rem;
 		padding-inline: 2rem;
 
-		width: 100%;
+		width: 100vw;
 		display: flex;
 		justify-content: end;
 		align-items: center;
@@ -72,10 +72,6 @@
 
 	footer .powered-by {
 		font-size: 0.75rem;
-	}
-
-	footer * {
-		vertical-align: middle;
 	}
 
 	footer .github-mark {

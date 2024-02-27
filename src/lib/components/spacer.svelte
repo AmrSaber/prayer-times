@@ -1,7 +1,5 @@
-<hr />
+<script lang="ts">
+	export let size: string = '1rem';
+</script>
 
-<style>
-	hr {
-		visibility: hidden;
-	}
-</style>
+<div style="height: {size}; width: 100%" />

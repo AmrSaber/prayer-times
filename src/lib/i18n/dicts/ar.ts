@@ -3,7 +3,7 @@ export default {
 	'change-language': 'En',
 	'powered-by': 'المواقيت من',
 
-	'displaying-from': 'عرض المواقيت من',
+	'displaying-from': 'المواقيت وفقاً لـ',
 	'select-mosque-in': 'أختر مسجد في',
 
 	change: 'تغيير',
