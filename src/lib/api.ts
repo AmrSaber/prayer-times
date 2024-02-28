@@ -61,14 +61,6 @@ export const MyMasjidApi = {
 			{ headers: { 'Content-Type': 'application/json' } }
 		);
 
-		const timings: TimingsModel & CachedMeta = await response.json().then((d) => d.model);
-
-		// Expire next year
-		const nextYear = new Date();
-		nextYear.setHours(0, 0, 0, 0);
-		nextYear.setFullYear(nextYear.getFullYear() + 1, 0, 1);
-		timings.expiresAt = nextYear.valueOf();
-
-		return timings;
+		return await response.json().then((d) => d.model);
 	}
 };
