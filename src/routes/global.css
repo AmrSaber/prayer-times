@@ -25,8 +25,8 @@
 
 :root {
   --clickable-color: dodgerblue;
-  --clickable-hover: rgb(10, 73, 136);
-  --accent: rgb(25, 121, 177);
+  --clickable-hover: #0a4988;
+  --accent: #1979b1;
 }
 
 * {
