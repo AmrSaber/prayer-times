@@ -87,8 +87,6 @@
 		nextPrayerLabel = document.querySelector('.label:has(+ .prayer-time.next)')?.innerHTML;
 
 		updateTimer();
-
-		setTimeout(bind, 500);
 	}
 
 	function updateTimer() {
@@ -104,13 +102,16 @@
 		isImminent = timeUntilNextPrayer.hours == 0 && timeUntilNextPrayer.minutes < 5;
 	}
 
+	// Update UI periodically
+	setInterval(bind, 500);
+
 	// Bind after all global variables have been initialized
 	tick().then(bind);
 
-	$: t = getTranslator($selectedLanguage as Language);
-
 	// Re-bind on language change so that any saved string is localized
 	selectedLanguage.subscribe(bind);
+
+	$: t = getTranslator($selectedLanguage as Language);
 </script>
 
 <div in:fade>
