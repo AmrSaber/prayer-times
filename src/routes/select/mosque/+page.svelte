@@ -1,18 +1,21 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
-	import Loader from './Loader.svelte';
-	import { selectedLanguage, selectedMosque } from '$lib/stores';
+	import { selectedLanguage, selectedMosque, selectedCity, selectedCountry } from '$lib/stores';
 	import { getMosques } from '$lib/services';
-	import Spacer from './spacer.svelte';
-	import Title from './Title.svelte';
 	import { getTranslator } from '$lib/i18n';
 	import type { Language } from '$lib/i18n/enums';
+	import Title from '$lib/components/Title.svelte';
+	import Loader from '$lib/components/Loader.svelte';
+	import type { Mosque } from '$lib/types/pure';
 
-	const UK_ID = 53;
-	const CAMBRIDGE_ID = 20245;
-	let mosquesPromise = getMosques(UK_ID, CAMBRIDGE_ID);
+	let mosquesPromise = getMosques($selectedCountry!.id, $selectedCity!.id);
 
 	$: t = getTranslator($selectedLanguage as Language);
+
+	function selectMosque(mosque: Mosque) {
+		$selectedMosque = mosque;
+		location.assign('/');
+	}
 </script>
 
 <div in:fade>
@@ -23,11 +26,11 @@
 			<Loader />
 		</div>
 	{:then mosques}
-		<div>{t('select-mosque-in')} Cambridge:</div>
+		<div>{t('select-mosque-in')} {$selectedCity?.name}:</div>
 		<ul>
 			{#each mosques as mosque (mosque.id)}
 				<li class="clickable">
-					<button on:click={() => ($selectedMosque = mosque)} class="not-button clickable">
+					<button on:click={() => selectMosque(mosque)} class="not-button clickable">
 						{mosque.name}
 					</button>
 				</li>

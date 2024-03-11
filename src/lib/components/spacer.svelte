@@ -1,5 +1,8 @@
-<script lang="ts">
-	export let size: string = '1rem';
-</script>
+<div />
 
-<div style="height: {size}; width: 100%" />
+<style>
+	div {
+		height: var(--size, 1rem);
+		widows: 100%;
+	}
+</style>

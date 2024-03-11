@@ -4,6 +4,9 @@ export default {
 	'powered-by': 'المواقيت من',
 
 	'displaying-from': 'المواقيت وفقاً لـ',
+
+	'select-country': 'أختر البلد',
+	'select-city-in': 'أختر مدينة في',
 	'select-mosque-in': 'أختر مسجد في',
 
 	change: 'تغيير',

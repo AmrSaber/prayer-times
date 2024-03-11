@@ -4,6 +4,9 @@ export default {
 	'powered-by': 'Powered by',
 
 	'displaying-from': 'Displaying prayer times from',
+
+	'select-country': 'Select country',
+	'select-city-in': 'Select city in',
 	'select-mosque-in': 'Select mosque in',
 
 	change: 'change',

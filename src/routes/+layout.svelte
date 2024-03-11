@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { getTranslator } from '$lib/i18n';
 	import { Language } from '$lib/i18n/enums';
-	import { selectedLanguage } from '$lib/stores';
+	import { selectedLanguage, selectedCountry, selectedCity, selectedMosque } from '$lib/stores';
 	import './global.css';
 
 	// Reset local storage if version doesn't match
@@ -12,6 +12,14 @@
 	if (savedVersion != LOCAL_STORAGE_VERSION) {
 		localStorage.clear();
 		localStorage.setItem(versionKey, String(LOCAL_STORAGE_VERSION));
+	}
+
+	if ($selectedCountry == null) {
+		if (!location.href.endsWith('/select/country')) location.replace('/select/country');
+	} else if ($selectedCity == null) {
+		if (!location.href.endsWith('/select/city')) location.replace('/select/city');
+	} else if ($selectedMosque == null) {
+		if (!location.href.endsWith('/select/mosque')) location.replace('/select/mosque');
 	}
 
 	$: t = getTranslator($selectedLanguage as Language);
@@ -34,7 +42,9 @@
 	<title>{t('title')}</title>
 </svelte:head>
 
-<slot />
+<main>
+	<slot />
+</main>
 
 <footer>
 	<a href="https://github.com/AmrSaber/prayer-times" target="_blank">
