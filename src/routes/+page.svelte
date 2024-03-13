@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { tick } from 'svelte';
-	import { getTimings } from '$lib/services';
+	import { getHijriDate, getTimings } from '$lib/services';
 	import { selectedLanguage, selectedMosque, selectedCity, selectedCountry } from '$lib/stores';
-	import { Timing } from '$lib/types';
+	import { Timing, type HijriDate } from '$lib/types';
 	import type { DayTimings } from '$lib/types/pure';
 	import { getLastThirdOfNight, getMidnight } from '$lib/utils';
 	import { markImminentElement } from '$lib/helpers';
@@ -14,8 +14,10 @@
 	import Title from '$lib/components/Title.svelte';
 	import Spacer from '$lib/components/spacer.svelte';
 	import Loader from '$lib/components/Loader.svelte';
+	import { UK_ID } from '$lib/constants';
 
 	let dayTimings: DayTimings | null = null;
+	let hijriDate: HijriDate | null = null;
 	$: midnightTime = getMidnight(dayTimings);
 	$: lastThirdTime = getLastThirdOfNight(dayTimings);
 
@@ -26,6 +28,8 @@
 	let nextPrayerLabel: string | undefined;
 	let timeUntilNextPrayer: Timing | undefined;
 	let isImminent = false;
+
+	$: showHijriDate = $selectedCountry?.id === UK_ID;
 
 	async function cacheTimings() {
 		const timings = await getTimings(mosqueId);
@@ -38,6 +42,10 @@
 		} else {
 			// Revalidate in the background
 			cacheTimings();
+		}
+
+		if (showHijriDate) {
+			hijriDate = await getHijriDate($selectedCountry!.id);
 		}
 
 		const timings = LocalStorageCache.get(timingsCacheKey) as TimingsModel;
@@ -116,6 +124,16 @@
 
 <div in:fade>
 	<Title />
+
+	{#if showHijriDate && hijriDate != null}
+		<div class="date">
+			{hijriDate?.day}
+			{t(hijriDate?.month)}
+			{hijriDate?.year}
+		</div>
+	{/if}
+
+	<Spacer />
 
 	<div>{t('displaying-from')}</div>
 	<h3>
@@ -200,6 +218,11 @@
 </div>
 
 <style>
+	.date {
+		text-align: end;
+		font-weight: bold;
+	}
+
 	h3 {
 		margin: 0;
 		margin-top: 0.5rem;

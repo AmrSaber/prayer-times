@@ -4,7 +4,9 @@ import arDict from './dicts/ar';
 import enDict from './dicts/en';
 
 export function getTranslator(language: Language) {
-	return function t(path: string): string {
+	return function t(path: string | null | undefined): string {
+		if (path == null) return '';
+
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		let dictionary: any;
 
