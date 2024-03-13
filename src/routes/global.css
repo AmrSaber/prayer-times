@@ -1,8 +1,13 @@
 @font-face {
   font-family: Almarai;
-  src:
-    url('/fonts/Almarai-Regular.ttf') format('truetype'),
-    url('/fonts/Almarai-Bold.ttf') format('truetype');
+  src: url('/fonts/Almarai-Regular.ttf') format('truetype');
+  font-weight: normal;
+}
+
+@font-face {
+  font-family: Almarai;
+  src: url('/fonts/Almarai-Bold.ttf') format('truetype');
+  font-weight: bold;
 }
 
 @media screen and (max-width: 460px) {
