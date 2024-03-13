@@ -66,6 +66,7 @@ main {
   outline: none;
   border: none;
   font-size: inherit;
+  color: inherit;
 }
 
 a.not-link, a.not-link:visited, a.not-link:active {
