@@ -50,17 +50,6 @@ main {
   padding-inline: 1.5rem;
 }
 
-.clickable {
-  color: var(--clickable-color);
-  text-decoration: none;
-  cursor: pointer;
-  padding: 0.5rem;
-}
-
-.clickable:hover {
-  color: var(--clickable-hover);
-}
-
 .not-button {
   background-color: transparent;
   outline: none;
@@ -72,6 +61,17 @@ main {
 a.not-link, a.not-link:visited, a.not-link:active {
   color: inherit;
   text-decoration: none;
+}
+
+.clickable {
+  color: var(--clickable-color);
+  text-decoration: none;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.clickable:hover {
+  color: var(--clickable-hover);
 }
 
 a,
