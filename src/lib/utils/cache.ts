@@ -38,3 +38,30 @@ export const LocalStorageCache: Cache = {
 		return this.get(key) != null;
 	}
 };
+
+const cacheMap = new Map();
+export const InMemoryCache: Cache = {
+	set(key: string, value: unknown) {
+		cacheMap.set(key, value);
+	},
+
+	delete(key: string) {
+		cacheMap.delete(key);
+	},
+
+	get(key: string) {
+		const value = cacheMap.get(key);
+		if (value == null) return undefined;
+
+		if (value?.expiresAt != null && value.expiresAt <= Date.now()) {
+			this.delete(key);
+			return undefined;
+		}
+
+		return value;
+	},
+
+	has(key: string) {
+		return this.get(key) != null;
+	}
+};
