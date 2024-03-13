@@ -129,7 +129,7 @@
 		<div class="date">
 			{hijriDate?.day}
 			{t(hijriDate?.month)}
-			{hijriDate?.year}
+			{hijriDate?.year} <a href="https://moonsighting.org.uk" target="_blank">*</a>
 		</div>
 	{/if}
 
@@ -221,6 +221,10 @@
 	.date {
 		text-align: end;
 		font-weight: bold;
+	}
+
+	.date a {
+		padding: 0.25rem;
 	}
 
 	h3 {
