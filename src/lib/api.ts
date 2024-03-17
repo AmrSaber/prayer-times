@@ -9,7 +9,6 @@ import type {
 	Mosque,
 	SalahTiming
 } from './types/pure';
-import type { CachedMeta } from './utils/cache';
 
 const MY_MASJID_BASE_URL = 'https://time.my-masjid.com/api';
 
@@ -59,7 +58,7 @@ export const MyMasjidApi = {
 		return await response.json().then((d) => d.model as Mosque[]);
 	},
 
-	async getTimings(mosqueId: string): Promise<TimingsModel & CachedMeta> {
+	async getTimings(mosqueId: string): Promise<TimingsModel> {
 		const response = await fetch(
 			`${MY_MASJID_BASE_URL}/TimingsInfoScreen/GetMasjidTimings?GuidId=${mosqueId}`,
 			{ headers: { 'Content-Type': 'application/json' } }
@@ -72,6 +71,9 @@ export const MyMasjidApi = {
 export const OwnApi = {
 	async getHijriDate(countryId: number): Promise<HijriDate> {
 		const response = await fetch(`/api/hijri-date/${countryId}`);
-		return await response.json();
+		const body = await response.json();
+
+		if (response.status > 200) throw new Error(body.error);
+		return body;
 	}
 };

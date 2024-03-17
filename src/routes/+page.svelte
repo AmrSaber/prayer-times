@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { tick } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { getHijriDate, getTimings } from '$lib/services';
 	import { selectedLanguage, selectedMosque, selectedCity, selectedCountry } from '$lib/stores';
 	import { Timing, type HijriDate } from '$lib/types';
@@ -33,7 +33,7 @@
 
 	async function cacheTimings() {
 		const timings = await getTimings(mosqueId);
-		LocalStorageCache.set(timingsCacheKey, timings);
+		if (timings != null) LocalStorageCache.set(timingsCacheKey, timings);
 	}
 
 	async function bind() {
@@ -45,7 +45,11 @@
 		}
 
 		if (showHijriDate) {
-			hijriDate = await getHijriDate($selectedCountry!.id);
+			try {
+				hijriDate = await getHijriDate($selectedCountry!.id);
+			} catch {
+				showHijriDate = false;
+			}
 		}
 
 		const timings = LocalStorageCache.get(timingsCacheKey) as TimingsModel;
@@ -111,7 +115,10 @@
 	}
 
 	// Update UI periodically
-	setInterval(bind, 500);
+	const intervalId = setInterval(bind, 500);
+	onMount(() => () => {
+		clearInterval(intervalId);
+	});
 
 	// Bind after all global variables have been initialized
 	tick().then(bind);
@@ -131,9 +138,9 @@
 			{t(hijriDate?.month)}
 			{hijriDate?.year} <a href="https://moonsighting.org.uk" target="_blank">*</a>
 		</div>
-	{/if}
 
-	<Spacer />
+		<Spacer />
+	{/if}
 
 	<div>{t('displaying-from')}</div>
 	<h3>

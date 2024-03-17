@@ -21,20 +21,28 @@ export async function GET({ params }) {
 		return json(exclude(date, ['expiresAt']));
 	}
 
-	const moonSightingPage = await fetch('https://www.moonsighting.org.uk');
-	const $ = cheerio.load(await moonSightingPage.text());
+	try {
+		const moonSightingPage = await fetch('https://www.moonsighting.org.uk');
+		const $ = cheerio.load(await moonSightingPage.text());
 
-	const dateParts =
-		$('div.topbar.hijridate').text().toLowerCase().trim().split('|').at(1)?.trim().split(' ') ?? [];
+		const dateParts =
+			$('div.topbar.hijridate').text().toLowerCase().trim().split('|').at(1)?.trim().split(' ') ??
+			[];
 
-	const date: HijriDate & CachedMeta = {
-		day: Number(dateParts[1].replace(/[a-z]+/g, '')),
-		month: dateParts[2],
-		year: Number(dateParts[3]),
-		expiresAt: getNextDay().valueOf()
-	};
+		const date: HijriDate & CachedMeta = {
+			day: Number(dateParts[1].replace(/[a-z]+/g, '')),
+			month: dateParts[2],
+			year: Number(dateParts[3]),
+			expiresAt: getNextDay().valueOf()
+		};
 
-	InMemoryCache.set(cacheKey, date);
+		InMemoryCache.set(cacheKey, date);
 
-	return json(exclude(date, ['expiresAt']));
+		return json(exclude(date, ['expiresAt']));
+	} catch (err) {
+		console.error('error getting hijri date: ' + err);
+		return new Response(JSON.stringify({ error: `internal error` }), {
+			status: 503
+		});
+	}
 }
