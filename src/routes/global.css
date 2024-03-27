@@ -44,6 +44,11 @@ body {
   background-color: #fdfdfd;
 }
 
+.arabic {
+  direction: rtl;
+  font-family: 'Almarai', Arial, Helvetica, sans-serif !important;
+}
+
 main {
   width: fit-content;
   margin-inline: auto;
@@ -56,6 +61,7 @@ main {
   border: none;
   font-size: inherit;
   color: inherit;
+  font-family: inherit;
 }
 
 a.not-link, a.not-link:visited, a.not-link:active {

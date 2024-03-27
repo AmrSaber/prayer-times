@@ -27,6 +27,7 @@
 
 	<button
 		class="not-button clickable change-lang"
+		class:arabic={$selectedLanguage !== Language.AR}
 		on:click={() => {
 			if ($selectedLanguage === Language.EN) $selectedLanguage = Language.AR;
 			else $selectedLanguage = Language.EN;

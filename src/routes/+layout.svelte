@@ -14,6 +14,7 @@
 		localStorage.setItem(versionKey, String(LOCAL_STORAGE_VERSION));
 	}
 
+	// Redirect based on missing state
 	if ($selectedCountry == null) {
 		if (!location.href.endsWith('/select/country')) location.replace('/select/country');
 	} else if ($selectedCity == null) {
@@ -23,6 +24,9 @@
 	}
 
 	$: t = getTranslator($selectedLanguage as Language);
+
+	// Set arabic tag based on language
+	$: document.body.classList.toggle('arabic', $selectedLanguage === Language.AR);
 </script>
 
 <svelte:head>
@@ -33,7 +37,6 @@
 			dataLayer.push(arguments);
 		}
 		gtag('js', new Date());
-
 		gtag('config', 'G-R76D3CED01');
 	</script>
 
@@ -56,15 +59,6 @@
 		{t('powered-by')} <a href="https://my-masjid.com" target="_blank">my-masjid.com</a>
 	</span>
 </footer>
-
-{#if $selectedLanguage === Language.AR}
-	<style>
-		body {
-			direction: rtl;
-			font-family: 'Almarai', Arial, Helvetica, sans-serif;
-		}
-	</style>
-{/if}
 
 <style>
 	footer {
