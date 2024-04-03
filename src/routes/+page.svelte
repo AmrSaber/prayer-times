@@ -15,6 +15,7 @@
 	import Spacer from '$lib/components/spacer.svelte';
 	import Loader from '$lib/components/Loader.svelte';
 	import { UK_ID } from '$lib/constants';
+	import throttle from 'lodash.throttle';
 
 	let dayTimings: DayTimings | null = null;
 	let hijriDate: HijriDate | null = null;
@@ -51,7 +52,8 @@
 			try {
 				hijriDate = await getHijriDate($selectedCountry!.id);
 			} catch {
-				showHijriDate = false;
+				hijriDate = null;
+				// nothing
 			}
 		}
 

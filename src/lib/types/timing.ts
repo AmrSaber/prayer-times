@@ -8,7 +8,7 @@ export class Timing {
       return;
     }
 
-    if (typeof value !== "string") {
+    if (typeof value !== 'string') {
       this.hours = value.hours;
       this.minutes = value.minutes;
       this.seconds = value.seconds;
@@ -19,15 +19,12 @@ export class Timing {
     }
 
     if (!isValidTiming(value)) {
-      console.warn(
-        `received invalid timing value "${value}"`,
-        "stack trace: " + new Error()
-      );
-      
+      console.warn(`received invalid timing value "${value}"`, 'stack trace: ' + new Error());
+
       return;
     }
 
-    const values = value.split(":");
+    const values = value.split(':');
     this.hours = Number(values[0] ?? 0);
     this.minutes = Number(values[1] ?? 0);
     this.seconds = Number(values[2] ?? 0);
@@ -86,16 +83,14 @@ export class Timing {
     const values = [this.hours, this.minutes];
     if (withSeconds) values.push(this.seconds);
 
-    return values.map((val) => String(val).padStart(2, "0")).join(":");
+    return values.map((val) => String(val).padStart(2, '0')).join(':');
   }
 
   toDate(): Date {
     const date = new Date();
 
     // If timing has passed, assume timing is for next day
-    if (
-      this.format(true) < date.toLocaleTimeString(undefined, { hour12: false })
-    ) {
+    if (this.format(true) < date.toLocaleTimeString(undefined, { hour12: false })) {
       date.setUTCDate(date.getUTCDate() + 1);
     }
 
@@ -129,5 +124,5 @@ export function getMostImminentTime(timings: Timing[]): Timing | undefined {
 }
 
 export function isValidTiming(value: string): boolean {
-  return /^\d+:\d+(:\d+)?$/.test(value)
+  return /^\d+:\d+(:\d+)?$/.test(value);
 }
