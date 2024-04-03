@@ -29,6 +29,9 @@
 	let timeUntilNextPrayer: Timing | undefined;
 	let isImminent = false;
 
+	let isFriday: boolean | undefined;
+	let fridayPrayerTiming: Timing | undefined;
+
 	$: showHijriDate = $selectedCountry?.id === UK_ID;
 
 	async function cacheTimings() {
@@ -87,6 +90,9 @@
 				congregation: new Timing(todayTiming.iqamah_Isha)
 			}
 		};
+
+		fridayPrayerTiming = new Timing(timings.masjidSettings.jumahTime);
+		isFriday = now.getDay() == 5;
 
 		// Wait for UI to update so that the related tags are displayed
 		await tick();
@@ -187,7 +193,7 @@
 			<span class="label">{t('zuhr')}</span>
 			<span class="prayer-time">{dayTimings?.zuhr.start.format()}</span>
 			<span class="congregation-time">
-				{dayTimings?.zuhr.congregation.format()}
+				{isFriday ? '-' : dayTimings?.zuhr.congregation.format()}
 			</span>
 
 			<span class="label">{t('asr')}</span>
@@ -214,6 +220,11 @@
 		<div class="table" id="other-timings">
 			<span class="label">{t('sunrise')}</span>
 			<span class="prayer-time">{dayTimings?.sunrise.format()}</span>
+
+			{#if isFriday}
+				<span class="label">{t('friday-prayer')}</span>
+				<span class="prayer-time">{fridayPrayerTiming?.format()}</span>
+			{/if}
 
 			<span class="label">{t('midnight')}</span>
 			<span class="prayer-time">{midnightTime?.format()}</span>

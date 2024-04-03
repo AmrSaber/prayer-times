@@ -35,6 +35,7 @@ export default {
 	iqamah: 'إقامة',
 
 	sunrise: 'شروق الشمس',
+	'friday-prayer': 'الجمعة',
 	midnight: 'منتصف الليل',
 	'last-third-of-night': 'الثلث الأخير من الليل'
 };

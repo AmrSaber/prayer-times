@@ -18,11 +18,13 @@ export class Timing {
       return;
     }
 
-    if (!/^\d+:\d+(:\d+)?$/.test(value)) {
+    if (!isValidTiming(value)) {
       console.warn(
         `received invalid timing value "${value}"`,
         "stack trace: " + new Error()
       );
+      
+      return;
     }
 
     const values = value.split(":");
@@ -124,4 +126,8 @@ export function getMostImminentTime(timings: Timing[]): Timing | undefined {
 
   // Find first item that is in the future
   return timings.find((time) => time.getTimeUntil() > 0);
+}
+
+export function isValidTiming(value: string): boolean {
+  return /^\d+:\d+(:\d+)?$/.test(value)
 }

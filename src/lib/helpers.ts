@@ -1,8 +1,9 @@
-import { Timing } from "./types";
+import { Timing, isValidTiming } from "./types";
 
 export function getImminentElement(querySelector: string): Element | undefined {
   const prayerTimings = [...document.querySelectorAll(querySelector)];
   const sortedTimings = prayerTimings
+    .filter(e => isValidTiming(e.innerHTML))
     .map((e) => ({
       element: e,
       timeUntil: new Timing(e.innerHTML).getTimeUntil(),

@@ -35,6 +35,7 @@ export default {
 	iqamah: 'Iqamah',
 
 	sunrise: 'Sunrise',
+	'friday-prayer': 'Jummah',
 	midnight: 'Midnight',
 	'last-third-of-night': 'Last third of night'
 };
