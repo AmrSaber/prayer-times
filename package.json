@@ -33,8 +33,11 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"cache-manager": "^5.4.0",
+		"cache-manager-sqlite": "^0.2.0",
 		"cheerio": "^1.0.0-rc.12",
 		"lodash.memoize": "^4.1.2",
-		"lodash.throttle": "^4.1.1"
+		"lodash.throttle": "^4.1.1",
+		"sqlite3": "^5.1.7"
 	}
 }

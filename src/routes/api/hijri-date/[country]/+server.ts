@@ -1,6 +1,6 @@
 import { UK_ID } from '$lib/constants.js';
+import { getCacheStore } from '$lib/server.js';
 import type { HijriDate } from '$lib/types/api.js';
-import { InMemoryCache } from '$lib/utils/cache.js';
 import { exclude } from '$lib/utils/objects.js';
 import { json } from '@sveltejs/kit';
 import * as cheerio from 'cheerio';
@@ -16,21 +16,22 @@ export async function GET({ params }) {
     const ukDate = await fetch('https://worldtimeapi.org/api/timezone/Europe/London').then((d) => d.json());
     const dayOfYear = ukDate.day_of_year as number;
 
+    const cacheStore = getCacheStore();
     const cacheKey = `api::hijri-date::${country}`;
-    if (InMemoryCache.has(cacheKey)) {
-      const date = InMemoryCache.get(cacheKey) as HijriDate;
+    const cachedDate = await cacheStore.get<HijriDate>(cacheKey);
 
-      if (date.dayOfYear != dayOfYear) {
-        InMemoryCache.delete(cacheKey);
+    if (cachedDate != null) {
+      if (cachedDate.dayOfYear != dayOfYear) {
+        await cacheStore.del(cacheKey);
       } else {
-        return json(exclude(date, ['dayOfYear']));
+        return json(exclude(cachedDate, ['dayOfYear']));
       }
     }
 
     const date = await scrapMoonSightingUkHijriDate();
     date.dayOfYear = dayOfYear;
 
-    InMemoryCache.set(cacheKey, date);
+    await cacheStore.set(cacheKey, date);
 
     return json(exclude(date, ['dayOfYear']));
   } catch (err) {
