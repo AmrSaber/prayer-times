@@ -11,6 +11,7 @@ export default {
 
   change: 'change',
   to: 'to',
+  clear: 'clear',
 
   muharram: 'Muharram',
   safar: 'Safar',

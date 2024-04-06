@@ -11,6 +11,7 @@ export default {
 
   change: 'تغيير',
   to: 'إلى',
+  clear: 'إزالة',
 
   muharram: 'محرم',
   safar: 'سفر',
