@@ -46,8 +46,10 @@
   }
 
   function selectCity(item: ListItem) {
-    $selectedCity = { id: item.id as number, name: item.label };
-    $selectedMosqueId = null;
+    if (item.id != $selectedCity?.id) {
+      $selectedCity = { id: item.id as number, name: item.label };
+      $selectedMosqueId = null;
+    }
 
     mode = Mode.CHANGE_MOSQUE;
   }
@@ -60,9 +62,11 @@
   }
 
   async function selectCountry(item: ListItem) {
-    $selectedCountry = { id: item.id as number, name: item.label };
-    $selectedCity = null;
-    $selectedMosqueId = null;
+    if (item.id != $selectedCountry?.id) {
+      $selectedCountry = { id: item.id as number, name: item.label };
+      $selectedCity = null;
+      $selectedMosqueId = null;
+    }
 
     mode = Mode.CHANGE_CITY;
   }
