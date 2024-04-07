@@ -71,9 +71,7 @@
 <Modal on:click={onClose}>
   {#if $selectedMosqueId != null}
     <div class="ender">
-      <button class="not-button" on:click={onClose}>
-        <img src="/icons/close.svg" alt="close" class="close" />
-      </button>
+      <button class="not-button close" on:click={onClose}> X </button>
     </div>
   {/if}
 
@@ -130,6 +128,9 @@
     width: 2.5rem;
     padding: 0.5rem;
     cursor: pointer;
+
+    font-weight: bolder;
+    font-size: 1rem;
   }
 
   .content {
@@ -137,7 +138,7 @@
   }
 
   h2 {
-    margin-top: 0;
+    margin-top: 1rem;
   }
 
   .ender {
