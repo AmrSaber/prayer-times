@@ -1,92 +1,37 @@
 <script lang="ts">
-  import { fade } from 'svelte/transition';
-  import { getRecentCities, selectedCity, selectedCountry, selectedLanguage, selectedMosque } from '$lib/stores';
-  import { getCities } from '$lib/services';
+  import { goto } from '$app/navigation';
+  import ListWithRecents, { type ListItem } from '$lib/components/ListWithRecents.svelte';
+  import Title from '$lib/components/Title.svelte';
   import { getTranslator } from '$lib/i18n';
   import type { Language } from '$lib/i18n/enums';
-  import Title from '$lib/components/Title.svelte';
-  import Loader from '$lib/components/Loader.svelte';
-  import type { City } from '$lib/types/pure';
-  import RecentsSeparator from '$lib/components/RecentsSeparator.svelte';
-  import { goto } from '$app/navigation';
-
-  let cities: City[];
-  let isLoading = false;
-
-  const recentCities = getRecentCities($selectedCountry!);
-  $: recentCityIds = $recentCities?.map((c) => c.id) ?? [];
+  import { getCities } from '$lib/services';
+  import { selectedCity, selectedCountry, selectedLanguage, selectedMosque } from '$lib/stores';
+  import { fade } from 'svelte/transition';
 
   $: t = getTranslator($selectedLanguage as Language);
 
   async function loadCities() {
-    isLoading = true;
-    cities = await getCities($selectedCountry!.id);
-    isLoading = false;
+    const cities = await getCities($selectedCountry!.id);
+    return cities.map((city) => {
+      return { id: city.id, label: city.name } as ListItem;
+    });
   }
 
-  async function selectCity(city: City) {
-    $selectedCity = city;
+  function selectCity(item: ListItem) {
+    $selectedCity = { id: item.id as number, name: item.label };
     $selectedMosque = null;
 
     goto('/select/mosque');
-
-    if (cities.length > 1) {
-      const filteredRecents = $recentCities?.filter((c) => c.id != city.id) ?? [];
-      $recentCities = [city, ...filteredRecents];
-    }
   }
-
-  loadCities();
 </script>
 
 <div in:fade>
   <Title />
 
-  {#if isLoading}
-    <div class="load-container centerer">
-      <Loader />
-    </div>
-  {:else}
-    <div>{t('select-city-in')} {$selectedCountry?.name}:</div>
-    <ul>
-      {#if $recentCities?.length != 0}
-        {#each $recentCities ?? [] as city (city.id)}
-          <li class="clickable">
-            <button on:click={() => selectCity(city)} class="not-button clickable">
-              {city.name}
-            </button>
-          </li>
-        {/each}
-
-        <RecentsSeparator store={recentCities} />
-      {/if}
-
-      {#each cities.filter((c) => !recentCityIds.includes(c.id)) as city (city.id)}
-        <li class="clickable">
-          <button on:click={() => selectCity(city)} class="not-button clickable">
-            {city.name}
-          </button>
-        </li>
-      {/each}
-    </ul>
-  {/if}
+  <ListWithRecents
+    title={`${t('select-city-in')} ${$selectedCountry?.name}:`}
+    loadItems={loadCities}
+    onItemSelected={selectCity}
+    persistenceKey="select-city"
+  />
 </div>
-
-<style>
-  .load-container {
-    padding: 2em;
-  }
-
-  ul {
-    padding-inline-start: 2rem;
-    margin-block: 0.5rem;
-  }
-
-  li {
-    padding-block: 0.25rem;
-  }
-
-  li button {
-    padding: 0;
-  }
-</style>

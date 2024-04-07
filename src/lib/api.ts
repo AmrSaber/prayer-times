@@ -5,9 +5,9 @@ import type {
   Country,
   IqamahTimings,
   JumahSalahIqamahTiming,
-  MasjidDetails,
   MasjidSettings,
   Mosque,
+  MosqueDetails,
   SalahTiming,
 } from './types/pure';
 
@@ -22,7 +22,7 @@ export type Response<T> = {
 };
 
 export type TimingsModel = {
-  masjidDetails: MasjidDetails;
+  masjidDetails: MosqueDetails;
   masjidSettings: MasjidSettings;
   salahTimings: SalahTiming[];
   iqamahTimings: IqamahTimings;

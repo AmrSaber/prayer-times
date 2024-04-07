@@ -13,6 +13,7 @@ export type City = {
 export type Mosque = {
   address: string;
   city: string;
+  country: string;
   guidId: string;
   id: number;
   image: string;
@@ -34,7 +35,7 @@ export type DayTimings = {
   isha: PrayerTiming;
 };
 
-export type MasjidDetails = {
+export type MosqueDetails = {
   id: number;
   guidId: string;
   name: string;

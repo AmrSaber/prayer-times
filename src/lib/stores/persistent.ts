@@ -1,10 +1,12 @@
 import { Language } from '$lib/i18n/enums';
-import type { City, Country, Mosque } from '../types/pure';
+import type { City, Country, Mosque, MosqueDetails } from '../types/pure';
 import { createPersistentStore } from './utils';
 
 export const selectedCountry = createPersistentStore<Country>('selected-country');
 export const selectedCity = createPersistentStore<City>('selected-city');
-export const selectedMosque = createPersistentStore<Mosque>('selected-mosque');
+
+export const selectedMosqueId = createPersistentStore<string>('selected-mosque-id');
+export const selectedMosque = createPersistentStore<MosqueDetails>('selected-mosque');
 
 export const recentCountries = createPersistentStore<Country[]>('cache::countries::recent', []);
 export const getRecentCities = (country: Country) =>
