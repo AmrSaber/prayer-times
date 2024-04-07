@@ -9,6 +9,12 @@ export default {
   'select-city-in': 'أختر مدينة في',
   'select-mosque-in': 'أختر مسجد في',
 
+  'change-mosque-title': 'أختر المسجد',
+  'change-city': 'تغيير المدينة',
+  'change-city-title': 'أختر المدينة',
+  'change-country': 'تغيير البلد',
+  'change-country-title': 'أختر البلد',
+
   change: 'تغيير',
   to: 'إلى',
   clear: 'إزالة',

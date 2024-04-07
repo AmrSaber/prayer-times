@@ -15,9 +15,11 @@
   import Spacer from '$lib/components/spacer.svelte';
   import Loader from '$lib/components/Loader.svelte';
   import { UK_ID } from '$lib/constants';
+  import ChangeMosque from '$lib/components/ChangeMosque.svelte';
 
   let isLoading = false;
   $: timingsCacheKey = `cache::mosques::${$selectedMosqueId}::timings`;
+  let showChangeMosque = false;
 
   let dayTimings: DayTimings | null = null;
   let hijriDate: HijriDate | null = null;
@@ -35,6 +37,12 @@
   $: showHijriDate = $selectedCountry?.id === UK_ID;
 
   async function setup() {
+    if ($selectedMosqueId == null) {
+      showChangeMosque = true;
+      isLoading = true;
+      return;
+    }
+
     if ($selectedMosque?.guidId !== $selectedMosqueId) {
       isLoading = true;
       $selectedMosque = await getTimings($selectedMosqueId!).then((d) => d.masjidDetails);
@@ -141,6 +149,12 @@
     }
   }
 
+  function closeChangeMosque() {
+    if ($selectedMosqueId != null) {
+      showChangeMosque = false;
+    }
+  }
+
   onMount(() => {
     // Whenever the selected mosque id changes, run setup, then update UI (to initialize global variables) then bind
     selectedMosqueId.subscribe(() => setup().then(tick).then(bind));
@@ -181,7 +195,9 @@
     </h3>
 
     <div id="select-holder">
-      <a href="/select/country"> {t('change')} </a>
+      <button class="not-button clickable" on:click={() => (showChangeMosque = true)}>
+        {t('change')}
+      </button>
     </div>
 
     <Spacer />
@@ -254,6 +270,10 @@
     </div>
   {/if}
 </div>
+
+{#if showChangeMosque}
+  <ChangeMosque onClose={closeChangeMosque} />
+{/if}
 
 <style>
   .date {

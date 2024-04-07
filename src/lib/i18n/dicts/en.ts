@@ -9,6 +9,12 @@ export default {
   'select-city-in': 'Select city in',
   'select-mosque-in': 'Select mosque in',
 
+  'change-mosque-title': 'Select Mosque',
+  'change-city': 'change city',
+  'change-city-title': 'Select City',
+  'change-country': 'change country',
+  'change-country-title': 'Select Country',
+
   change: 'change',
   to: 'to',
   clear: 'clear',

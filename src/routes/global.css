@@ -34,8 +34,14 @@
   --accent: #1979b1;
 }
 
+html {
+  min-width: fit-content;
+  min-height: fit-content;
+}
+
 * {
   box-sizing: border-box;
+  outline: 1px solid red;
 }
 
 body {

@@ -1,26 +1,17 @@
 <script lang="ts">
   import { getTranslator } from '$lib/i18n';
   import { Language } from '$lib/i18n/enums';
-  import { selectedLanguage, selectedCountry, selectedCity, selectedMosque } from '$lib/stores';
+  import { selectedLanguage } from '$lib/stores';
   import './global.css';
 
   // Reset local storage if version doesn't match
-  const LOCAL_STORAGE_VERSION = 2;
+  const LOCAL_STORAGE_VERSION = 3;
   const versionKey = 'local-storage-version';
 
   const savedVersion = Number(localStorage.getItem(versionKey) ?? -1);
   if (savedVersion != LOCAL_STORAGE_VERSION) {
     localStorage.clear();
     localStorage.setItem(versionKey, String(LOCAL_STORAGE_VERSION));
-  }
-
-  // Redirect based on missing state
-  if ($selectedCountry == null) {
-    if (!location.href.endsWith('/select/country')) location.replace('/select/country');
-  } else if ($selectedCity == null) {
-    if (!location.href.endsWith('/select/city')) location.replace('/select/city');
-  } else if ($selectedMosque == null) {
-    if (!location.href.endsWith('/select/mosque')) location.replace('/select/mosque');
   }
 
   $: t = getTranslator($selectedLanguage as Language);
