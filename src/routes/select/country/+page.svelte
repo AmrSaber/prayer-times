@@ -18,9 +18,9 @@
   $: t = getTranslator($selectedLanguage as Language);
 
   async function loadCountries() {
-    isLoading = false;
-    countries = await getCountries();
     isLoading = true;
+    countries = await getCountries();
+    isLoading = false;
   }
 
   function selectCountry(country: Country) {
