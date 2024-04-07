@@ -12,19 +12,19 @@
 
 @media screen and (max-width: 460px) {
   html {
-    font-size: 14px;
+    font-size: 12px;
   }
 }
 
 @media screen and (max-width: 380px) {
   html {
-    font-size: 12px;
+    font-size: 10px;
   }
 }
 
 @media screen and (max-width: 350px) {
   html {
-    font-size: 10px;
+    font-size: 8px;
   }
 }
 
@@ -34,14 +34,8 @@
   --accent: #1979b1;
 }
 
-html {
-  min-width: fit-content;
-  min-height: fit-content;
-}
-
 * {
   box-sizing: border-box;
-  outline: 1px solid red;
 }
 
 body {

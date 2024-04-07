@@ -33,4 +33,11 @@
     max-height: 70vh;
     overflow: auto;
   }
+
+  @media screen and (prefers-color-scheme: dark) {
+    .content {
+      background-color: #222;
+      border-color: white;
+    }
+  }
 </style>

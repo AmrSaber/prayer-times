@@ -55,9 +55,11 @@
   footer {
     position: fixed;
     bottom: 0;
+    left: 0;
+    right: 0;
 
     padding-block: 0.5rem;
-    padding-inline: 2rem;
+    padding-inline: 1rem;
 
     width: 100vw;
     display: flex;

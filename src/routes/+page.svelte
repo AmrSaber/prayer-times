@@ -203,7 +203,7 @@
     <Spacer />
 
     <div id="prayer-timer">
-      <span class:danger={isImminent}>{timeUntilNextPrayer?.format(true)}</span>
+      <span class:danger={isImminent} class="timer">{timeUntilNextPrayer?.format(true)}</span>
       {t('to')}
       {#key nextPrayerLabel}
         <span class="label next">
@@ -349,6 +349,13 @@
     text-align: center;
     font-weight: bold;
     margin-block: 2rem;
+  }
+
+  .timer {
+    font-family: monospace;
+
+    /* Monospace is too big! */
+    font-size: 0.9rem;
   }
 
   #other-timings {

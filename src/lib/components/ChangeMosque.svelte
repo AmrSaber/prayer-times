@@ -70,9 +70,11 @@
 
 <Modal on:click={onClose}>
   {#if $selectedMosqueId != null}
-    <button class="not-button" on:click={onClose}>
-      <img src="/icons/close.svg" alt="close" class="close" />
-    </button>
+    <div class="ender">
+      <button class="not-button" on:click={onClose}>
+        <img src="/icons/close.svg" alt="close" class="close" />
+      </button>
+    </div>
   {/if}
 
   <div class="content">
@@ -88,7 +90,7 @@
 
       <Spacer />
 
-      <div class="change">
+      <div class="ender">
         <button class="not-button clickable" on:click={() => (mode = Mode.CHANGE_CITY)}>
           {t('change-city')}
         </button>
@@ -105,7 +107,7 @@
 
       <Spacer />
 
-      <div class="change">
+      <div class="ender">
         <button class="not-button clickable" on:click={() => (mode = Mode.CHANGE_COUNTRY)}>
           {t('change-country')}
         </button>
@@ -138,7 +140,7 @@
     margin-top: 0;
   }
 
-  .change {
+  .ender {
     text-align: end;
   }
 </style>
