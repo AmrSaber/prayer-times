@@ -12,6 +12,7 @@
   if (savedVersion != LOCAL_STORAGE_VERSION) {
     localStorage.clear();
     localStorage.setItem(versionKey, String(LOCAL_STORAGE_VERSION));
+    location.reload();
   }
 
   $: t = getTranslator($selectedLanguage as Language);
