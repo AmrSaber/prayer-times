@@ -1,6 +1,10 @@
+<script lang="ts">
+  export let contentDiv: HTMLDivElement | undefined = undefined;
+</script>
+
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="container" on:click|self on:keypress|self>
-  <div class="content">
+  <div class="content" bind:this={contentDiv}>
     <slot />
   </div>
 </div>

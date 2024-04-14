@@ -10,6 +10,8 @@
 
   export let onClose: () => unknown;
 
+  let modalContent: HTMLDivElement;
+
   $: t = getTranslator($selectedLanguage as Language);
 
   enum Mode {
@@ -51,7 +53,7 @@
       $selectedMosqueId = null;
     }
 
-    mode = Mode.CHANGE_MOSQUE;
+    changeMode(Mode.CHANGE_MOSQUE);
   }
 
   async function loadCountries() {
@@ -68,11 +70,16 @@
       $selectedMosqueId = null;
     }
 
-    mode = Mode.CHANGE_CITY;
+    changeMode(Mode.CHANGE_CITY);
+  }
+
+  function changeMode(newMode: Mode) {
+    mode = newMode;
+    modalContent.scrollTo({ top: 0, behavior: 'smooth' });
   }
 </script>
 
-<Modal on:click={onClose}>
+<Modal on:click={onClose} bind:contentDiv={modalContent}>
   {#if $selectedMosqueId != null}
     <div class="ender">
       <button class="not-button close" on:click={onClose}> X </button>
@@ -93,7 +100,7 @@
       <Spacer />
 
       <div class="ender">
-        <button class="not-button clickable" on:click={() => (mode = Mode.CHANGE_CITY)}>
+        <button class="not-button clickable" on:click={() => changeMode(Mode.CHANGE_CITY)}>
           {t('change-city')}
         </button>
       </div>
@@ -110,7 +117,7 @@
       <Spacer />
 
       <div class="ender">
-        <button class="not-button clickable" on:click={() => (mode = Mode.CHANGE_COUNTRY)}>
+        <button class="not-button clickable" on:click={() => changeMode(Mode.CHANGE_COUNTRY)}>
           {t('change-country')}
         </button>
       </div>
