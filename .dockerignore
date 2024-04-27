@@ -1,0 +1,13 @@
+README.md
+
+/cache
+cache.db
+
+Dockerfile
+.dockerfile
+compose.yaml
+
+build
+dist
+node_modules
+.svelte-kit

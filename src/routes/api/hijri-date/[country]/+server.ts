@@ -16,7 +16,7 @@ export async function GET({ params }) {
     const ukDate = await fetch('https://worldtimeapi.org/api/timezone/Europe/London').then((d) => d.json());
     const dayOfYear = ukDate.day_of_year as number;
 
-    const cacheStore = getCacheStore();
+    const cacheStore = await getCacheStore();
     const cacheKey = `api::hijri-date::${country}`;
     const cachedDate = await cacheStore.get<HijriDate>(cacheKey);
 
