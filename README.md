@@ -1,6 +1,6 @@
 ## Prayer Times
 
-Simple, light-weight svelte website to quickly display prayer times for Cambridge, UK.
+Simple, light-weight svelte website to quickly display prayer times for Cambridge, UK and other places.
 
 App is currently hosted at: [prayer.amrsaber.io](https://prayer.amrsaber.io).
 
