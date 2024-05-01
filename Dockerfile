@@ -5,7 +5,7 @@ WORKDIR /app
 COPY package.json .
 COPY package-lock.json .
 
-RUN yarn install --freeze-lockfile --verbose
+RUN --mount=type=cache,target=/usr/local/share/.cache yarn install --freeze-lockfile --verbose
 
 COPY . .
 
