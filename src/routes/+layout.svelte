@@ -41,6 +41,8 @@
   <slot />
 </main>
 
+<div id="spacer" />
+
 <footer>
   <a href="https://github.com/AmrSaber/prayer-times" target="_blank">
     <img class="github-mark light-only" alt="github logo" src="/github-mark.svg" />
@@ -53,16 +55,16 @@
 </footer>
 
 <style>
-  footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+  #spacer {
+    flex-grow: 1;
+    min-height: 2rem;
+  }
 
+  footer {
     padding-block: 0.5rem;
     padding-inline: 1rem;
 
-    width: 100vw;
+    width: 100%;
     display: flex;
     justify-content: end;
     align-items: center;
