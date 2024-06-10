@@ -4,9 +4,6 @@ import arDict from './dicts/ar';
 import enDict from './dicts/en';
 
 export function getTranslator(language: Language) {
-  return function t(path: string | null | undefined): string {
-    if (path == null) return '';
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let dictionary: any;
 
@@ -16,6 +13,12 @@ export function getTranslator(language: Language) {
       dictionary = arDict;
     }
 
-    return path.split('.').reduce((dict, key) => dict[key], dictionary);
+  return function t(path: string | null | undefined): string {
+    if (path == null) return '';
+
+    const value = path.split('.').reduce((dict, key) => dict[key] ?? {}, dictionary);
+    if (typeof value !== 'string') return `[${path}]`;
+    return value;
   };
 }
+
