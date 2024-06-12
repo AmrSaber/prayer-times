@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte';
   import { getHijriDate, getTimings } from '$lib/services';
-  import { selectedLanguage, selectedMosque, selectedCountry, selectedMosqueId } from '$lib/stores';
+  import { selectedLanguage, selectedMosque, selectedCountry, selectedMosqueId, showTimerSeconds } from '$lib/stores';
   import { Timing, type HijriDate } from '$lib/types';
   import type { DayTimings } from '$lib/types/pure';
   import { getLastThirdOfNight, getMidnight } from '$lib/utils';
@@ -132,7 +132,10 @@
     timeUntilNextPrayer.seconds = nextPrayerTime.seconds - now.getSeconds();
 
     timeUntilNextPrayer.normalize();
-    isImminent = timeUntilNextPrayer.hours == 0 && timeUntilNextPrayer.minutes < 5;
+    isImminent =
+      timeUntilNextPrayer.hours == 0 &&
+      ((timeUntilNextPrayer.minutes < 5 && timeUntilNextPrayer.seconds > 0) ||
+        (timeUntilNextPrayer.minutes == 5 && timeUntilNextPrayer.seconds == 0));
   }
 
   async function cacheTimings() {
@@ -153,6 +156,10 @@
     if ($selectedMosqueId != null) {
       showChangeMosque = false;
     }
+  }
+
+  function toggleShowTimerSeconds() {
+    $showTimerSeconds = !$showTimerSeconds;
   }
 
   onMount(() => {
@@ -203,7 +210,9 @@
     <Spacer />
 
     <div id="prayer-timer">
-      <span class:danger={isImminent} class="timer">{timeUntilNextPrayer?.format(true)}</span>
+      <button class:danger={isImminent} class="not-button" id="timer" on:click={toggleShowTimerSeconds}>
+        {timeUntilNextPrayer?.format($showTimerSeconds ?? true)}
+      </button>
       {t('to')}
       {#key nextPrayerLabel}
         <span class="label next">
@@ -351,11 +360,11 @@
     margin-block: 2rem;
   }
 
-  .timer {
+  #timer {
     font-family: monospace;
+    font-size: 0.9rem; /* Monospace is too big! */
 
-    /* Monospace is too big! */
-    font-size: 0.9rem;
+    cursor: default;
   }
 
   #other-timings {

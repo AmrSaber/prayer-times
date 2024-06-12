@@ -56,9 +56,12 @@ main {
   font-size: inherit;
   color: inherit;
   font-family: inherit;
+  font-weight: inherit;
 }
 
-a.not-link, a.not-link:visited, a.not-link:active {
+a.not-link,
+a.not-link:visited,
+a.not-link:active {
   color: inherit;
   text-decoration: none;
 }
@@ -111,4 +114,3 @@ a:hover {
     display: none;
   }
 }
-

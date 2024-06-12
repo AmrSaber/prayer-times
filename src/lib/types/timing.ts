@@ -80,8 +80,24 @@ export class Timing {
   format(withSeconds = false): string {
     this.normalize();
 
-    const values = [this.hours, this.minutes];
-    if (withSeconds) values.push(this.seconds);
+    let { hours, minutes, seconds } = this;
+
+    const values: number[] = [];
+    if (withSeconds) {
+      values.push(hours, minutes, seconds);
+    } else {
+      if (seconds > 0) {
+        minutes++;
+        seconds = 0;
+
+        if (minutes >= 60) {
+          hours += Math.floor(minutes / 60);
+          minutes %= 60;
+        }
+      }
+
+      values.push(hours, minutes);
+    }
 
     return values.map((val) => String(val).padStart(2, '0')).join(':');
   }

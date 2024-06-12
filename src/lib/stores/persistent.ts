@@ -15,3 +15,4 @@ export const getRecentMosques = (city: City) =>
   createPersistentStore<Mosque[]>(`cache::countries::cities::${city.id}::mosques`);
 
 export const selectedLanguage = createPersistentStore<Language>('selected-language', Language.EN);
+export const showTimerSeconds = createPersistentStore<boolean>('show-timer-seconds', true);
