@@ -20,7 +20,7 @@ export default {
   clear: 'إزالة',
 
   muharram: 'محرم',
-  safar: 'سفر',
+  safar: 'صفر',
   'rabi-i': 'ربيع أول',
   'rabi-ii': 'ربيع ثاني',
   'jumada-i': 'جمادي أول',
