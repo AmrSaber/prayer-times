@@ -1,5 +1,5 @@
 import { UK_ID } from '$lib/constants.js';
-import { getCacheStore } from '$lib/server.js';
+import { getCacheStore } from '$lib/server';
 import type { HijriDate } from '$lib/types/api.js';
 import { exclude } from '$lib/utils/objects.js';
 import { json } from '@sveltejs/kit';
@@ -18,11 +18,11 @@ export async function GET({ params }) {
 
     const cacheStore = await getCacheStore();
     const cacheKey = `api::hijri-date::${country}`;
-    const cachedDate = await cacheStore.get<HijriDate>(cacheKey);
+    const cachedDate = cacheStore.get<HijriDate>(cacheKey);
 
     if (cachedDate != null) {
       if (cachedDate.dayOfYear != dayOfYear) {
-        await cacheStore.del(cacheKey);
+        cacheStore.delete(cacheKey);
       } else {
         return json(exclude(cachedDate, ['dayOfYear']));
       }
@@ -31,7 +31,7 @@ export async function GET({ params }) {
     const date = await scrapMoonSightingUkHijriDate();
     date.dayOfYear = dayOfYear;
 
-    await cacheStore.set(cacheKey, date);
+    cacheStore.set(cacheKey, date);
 
     return json(exclude(date, ['dayOfYear']));
   } catch (err) {
