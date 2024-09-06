@@ -51,7 +51,7 @@ describe('SqliteCache Tests', () => {
     cache.set(key, value, { expiresAt: Date.now() + ttl });
     expect(cache.get<string>(key)).toEqual(value);
 
-    await sleep(ttl);
+    await sleep(ttl + 50);
 
     expect(cache.get(key)).toEqual(undefined);
   });
