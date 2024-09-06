@@ -1,15 +1,31 @@
-FROM node:lts-alpine
+# Install using yarn, as bun install has problems with docker
+# See: https://github.com/oven-sh/bun/issues/10371
+FROM node:lts-alpine AS install
 
 WORKDIR /app
 
 COPY package.json .
-COPY package-lock.json .
+COPY yarn.lock .
 
 RUN --mount=type=cache,target=/usr/local/share/.cache yarn install --freeze-lockfile --verbose
 
+# Build using bun
+FROM oven/bun:1-alpine AS build
+
+WORKDIR /app
+
+COPY --from=install /app /app
 COPY . .
 
-RUN npm run build
+RUN bun --bun run build
 
-CMD node ./build/index.js
+# Run using bun
+FROM oven/bun:1-alpine
 
+COPY --from=build /app/build /app
+
+ENV PORT=80
+EXPOSE 80
+
+WORKDIR /app
+CMD ["bun", "/app/index.js"]
