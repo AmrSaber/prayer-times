@@ -2,5 +2,9 @@ export type HijriDate = {
   day: number;
   month: string;
   year: number;
-  dayOfYear?: number;
+};
+
+export type HijriDateAnchor = {
+  hijriDate: HijriDate;
+  gregorianDayOfYear: number;
 };

@@ -2,9 +2,11 @@ import { sleep } from 'bun';
 import { describe, expect, test } from 'bun:test';
 import { SqliteCache } from './cache';
 
+const MEMORY_PATH = ':memory:';
+
 describe('SqliteCache Tests', () => {
   test('set/get works', () => {
-    const cache = new SqliteCache(':memory:');
+    const cache = new SqliteCache(MEMORY_PATH);
 
     const key = 'my-key';
     const value = 'my-value';
@@ -14,12 +16,12 @@ describe('SqliteCache Tests', () => {
   });
 
   test('getting unset value', () => {
-    const cache = new SqliteCache(':memory:');
+    const cache = new SqliteCache(MEMORY_PATH);
     expect(cache.get('no-there')).toBe(undefined);
   });
 
   test('delete works', () => {
-    const cache = new SqliteCache(':memory:');
+    const cache = new SqliteCache(MEMORY_PATH);
 
     const key = 'my-key';
     const value = 'my-value';
@@ -32,7 +34,7 @@ describe('SqliteCache Tests', () => {
   });
 
   test('cleaning expired works', () => {
-    const cache = new SqliteCache(':memory:');
+    const cache = new SqliteCache(MEMORY_PATH);
 
     const key = 'my-key';
     const value = 'my-value';
@@ -42,7 +44,7 @@ describe('SqliteCache Tests', () => {
   });
 
   test('ttl works', async () => {
-    const cache = new SqliteCache(':memory:');
+    const cache = new SqliteCache(MEMORY_PATH);
 
     const key = 'my-key';
     const value = 'my-value';
@@ -54,5 +56,23 @@ describe('SqliteCache Tests', () => {
     await sleep(ttl + 50);
 
     expect(cache.get(key)).toEqual(undefined);
+  });
+
+  test('reset works', async () => {
+    const cache = new SqliteCache(MEMORY_PATH);
+
+    cache.set('key-1', 'value-1');
+    cache.set('key-2', 'value-2');
+
+    expect(cache.get<string>('key-1')).toEqual('value-1');
+    expect(cache.get<string>('key-2')).toEqual('value-2');
+
+    cache.reset();
+
+    expect(cache.get('key-1')).toEqual(undefined);
+    expect(cache.get('key-2')).toEqual(undefined);
+
+    cache.set('some-key', 'some-value');
+    expect(cache.get<string>('some-key')).toEqual('some-value');
   });
 });

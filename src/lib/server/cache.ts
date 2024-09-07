@@ -7,6 +7,9 @@ type Record = {
   expires_at: number | null;
 };
 
+const CACHE_VERSION = 1;
+const CACHE_VERSION_KEY = 'cache::version';
+
 export class SqliteCache {
   private db: Database;
 
@@ -16,14 +19,21 @@ export class SqliteCache {
     // Enable WAL mode
     this.db.exec('PRAGMA journal_mode = WAL;');
 
-    // Initialize the database in a transaction
     this.db
       .transaction(() => {
-        // Initialize the table
-        this.db.exec(`CREATE TABLE IF NOT EXISTS kv (key TEXT PRIMARY KEY, value TEXT, expires_at INTEGER)`);
-        this.db.exec(`CREATE INDEX IF NOT EXISTS kv__expires_at ON kv (expires_at)`);
+        this.initDb();
+        if (this.get<number>(CACHE_VERSION_KEY) != CACHE_VERSION) {
+          this.reset();
+          this.set(CACHE_VERSION_KEY, CACHE_VERSION);
+        }
       })
       .exclusive();
+  }
+
+  private initDb() {
+    // Initialize the table
+    this.db.exec(`CREATE TABLE IF NOT EXISTS kv (key TEXT PRIMARY KEY, value TEXT, expires_at INTEGER)`);
+    this.db.exec(`CREATE INDEX IF NOT EXISTS kv__expires_at ON kv (expires_at)`);
   }
 
   private cleanExpired() {
@@ -52,5 +62,14 @@ export class SqliteCache {
 
   delete(key: string) {
     this.db.exec('DELETE FROM kv WHERE kv.key = ?', [key]);
+  }
+
+  reset() {
+    this.db
+      .transaction(() => {
+        this.db.exec('DELETE FROM kv');
+        this.initDb();
+      })
+      .exclusive();
   }
 }

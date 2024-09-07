@@ -1,7 +1,6 @@
 import { UK_ID } from '$lib/constants.js';
 import { getCacheStore } from '$lib/server';
-import type { HijriDate } from '$lib/types/api.js';
-import { exclude } from '$lib/utils/objects.js';
+import type { HijriDate, HijriDateAnchor } from '$lib/types/api.js';
 import { json } from '@sveltejs/kit';
 import * as cheerio from 'cheerio';
 
@@ -18,22 +17,21 @@ export async function GET({ params }) {
 
     const cacheStore = await getCacheStore();
     const cacheKey = `api::hijri-date::${country}`;
-    const cachedDate = cacheStore.get<HijriDate>(cacheKey);
+    const cachedDate = cacheStore.get<HijriDateAnchor>(cacheKey);
 
     if (cachedDate != null) {
-      if (cachedDate.dayOfYear != dayOfYear) {
-        cacheStore.delete(cacheKey);
-      } else {
-        return json(exclude(cachedDate, ['dayOfYear']));
-      }
+      const { hijriDate, gregorianDayOfYear } = cachedDate;
+      const daysDiff = dayOfYear - gregorianDayOfYear;
+      hijriDate.day += daysDiff;
+
+      if (daysDiff >= 0 && hijriDate.day <= 29) return json(hijriDate);
     }
 
-    const date = await scrapMoonSightingUkHijriDate();
-    date.dayOfYear = dayOfYear;
+    const hijriDate = await scrapMoonSightingUkHijriDate();
+    const anchor: HijriDateAnchor = { hijriDate, gregorianDayOfYear: dayOfYear };
+    cacheStore.set(cacheKey, anchor);
 
-    cacheStore.set(cacheKey, date);
-
-    return json(exclude(date, ['dayOfYear']));
+    return json(hijriDate);
   } catch (err) {
     console.error('error getting hijri date: ' + err);
     return new Response(JSON.stringify({ error: `internal error` }), { status: 503 });
