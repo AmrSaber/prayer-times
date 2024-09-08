@@ -5,7 +5,7 @@
   import './global.css';
 
   // Reset local storage if version doesn't match
-  const LOCAL_STORAGE_VERSION = 4;
+  const LOCAL_STORAGE_VERSION = 5;
   const versionKey = 'local-storage-version';
 
   const savedVersion = Number(localStorage.getItem(versionKey) ?? -1);

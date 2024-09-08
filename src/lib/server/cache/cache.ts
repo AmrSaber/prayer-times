@@ -23,7 +23,7 @@ export class SqliteCache {
       .transaction(() => {
         this.initDb();
         if (this.get<number>(CACHE_VERSION_KEY) != CACHE_VERSION) {
-          this.reset();
+          this.clear();
           this.set(CACHE_VERSION_KEY, CACHE_VERSION);
         }
       })
@@ -40,7 +40,7 @@ export class SqliteCache {
     this.db.exec(`DELETE FROM kv WHERE expires_at IS NOT NULL AND expires_at < ?`, [Date.now()]);
   }
 
-  set<T>(key: string, value: T, { expiresAt = null }: { expiresAt?: number | null } = {}) {
+  set(key: string, value: unknown, { expiresAt = null }: { expiresAt?: number | null } = {}) {
     this.db.exec(
       `INSERT INTO kv (key, value, expires_at)
        VALUES(?, ?, ?) 
@@ -64,7 +64,7 @@ export class SqliteCache {
     this.db.exec('DELETE FROM kv WHERE kv.key = ?', [key]);
   }
 
-  reset() {
+  clear() {
     this.db
       .transaction(() => {
         this.db.exec('DELETE FROM kv');

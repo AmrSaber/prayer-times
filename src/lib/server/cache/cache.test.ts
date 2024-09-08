@@ -67,7 +67,7 @@ describe('SqliteCache Tests', () => {
     expect(cache.get<string>('key-1')).toEqual('value-1');
     expect(cache.get<string>('key-2')).toEqual('value-2');
 
-    cache.reset();
+    cache.clear();
 
     expect(cache.get('key-1')).toEqual(undefined);
     expect(cache.get('key-2')).toEqual(undefined);
