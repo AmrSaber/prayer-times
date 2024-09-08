@@ -13,29 +13,31 @@
     "format": "prettier --plugin-search-dir . --write ."
   },
   "devDependencies": {
-    "@sveltejs/kit": "^1.20.4",
+    "@sveltejs/kit": "^1.30.4",
     "@types/bun": "^1.1.8",
     "@types/lodash.memoize": "^4.1.9",
     "@types/lodash.throttle": "^4.1.9",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
-    "eslint": "^8.28.0",
-    "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-svelte": "^2.30.0",
-    "prettier": "^2.8.0",
+    "@types/luxon": "^3.4.2",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^8.10.0",
+    "eslint-plugin-svelte": "^2.43.0",
+    "prettier": "^2.8.8",
     "prettier-plugin-svelte": "^2.10.1",
-    "svelte": "^4.0.5",
+    "svelte": "^4.2.19",
     "svelte-adapter-bun": "^0.5.2",
-    "svelte-check": "^3.4.3",
-    "tslib": "^2.4.1",
-    "typescript": "^5.0.0",
-    "vite": "^4.4.2",
-    "vitest": "^0.34.0"
+    "svelte-check": "^3.8.6",
+    "tslib": "^2.7.0",
+    "typescript": "^5.5.4",
+    "vite": "^4.5.3",
+    "vitest": "^0.34.6"
   },
   "type": "module",
   "dependencies": {
-    "cheerio": "^1.0.0-rc.12",
+    "cheerio": "^1.0.0",
     "lodash.memoize": "^4.1.2",
-    "lodash.throttle": "^4.1.1"
+    "lodash.throttle": "^4.1.1",
+    "luxon": "^3.5.0"
   }
 }

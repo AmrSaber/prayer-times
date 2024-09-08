@@ -1,8 +1,9 @@
-import { UK_ID } from '$lib/constants.js';
+import { UK_ID, UK_TIME_ZONE } from '$lib/constants.js';
 import { getCacheStore } from '$lib/server';
 import type { HijriDate, HijriDateAnchor } from '$lib/types/api.js';
 import { json } from '@sveltejs/kit';
 import * as cheerio from 'cheerio';
+import { DateTime } from 'luxon';
 
 export async function GET({ params }) {
   const country = params.country.toLowerCase();
@@ -12,8 +13,7 @@ export async function GET({ params }) {
   }
 
   try {
-    const ukDate = await fetch('https://worldtimeapi.org/api/timezone/Europe/London').then((d) => d.json());
-    const dayOfYear = ukDate.day_of_year as number;
+    const dayOfYear = DateTime.now().setZone(UK_TIME_ZONE).ordinal;
 
     const cacheStore = await getCacheStore();
     const cacheKey = `api::hijri-date::${country}`;
