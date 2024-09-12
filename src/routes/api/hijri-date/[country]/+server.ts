@@ -1,6 +1,7 @@
 import { UK_ID, UK_TIME_ZONE } from '$lib/constants.js';
 import { getCacheStore } from '$lib/server';
 import type { HijriDate, HijriDateAnchor } from '$lib/types/api.js';
+import { getHijriDateFromAnchor } from '$lib/utils/dates.js';
 import { json } from '@sveltejs/kit';
 import * as cheerio from 'cheerio';
 import { DateTime } from 'luxon';
@@ -13,22 +14,16 @@ export async function GET({ params }) {
   }
 
   try {
-    const dayOfYear = DateTime.now().setZone(UK_TIME_ZONE).ordinal;
-
     const cacheStore = await getCacheStore();
     const cacheKey = `api::hijri-date::${country}`;
     const cachedDate = cacheStore.get<HijriDateAnchor>(cacheKey);
 
-    if (cachedDate != null) {
-      const { hijriDate, gregorianDayOfYear } = cachedDate;
-      const daysDiff = dayOfYear - gregorianDayOfYear;
-      hijriDate.day += daysDiff;
+    const currentDate = DateTime.now().setZone(UK_TIME_ZONE).toISO()!;
+    let hijriDate = getHijriDateFromAnchor(cachedDate, currentDate);
+    if (hijriDate != null) return json(hijriDate);
 
-      if (daysDiff >= 0 && hijriDate.day <= 29) return json(hijriDate);
-    }
-
-    const hijriDate = await scrapMoonSightingUkHijriDate();
-    const anchor: HijriDateAnchor = { hijriDate, gregorianDayOfYear: dayOfYear };
+    hijriDate = await scrapMoonSightingUkHijriDate();
+    const anchor: HijriDateAnchor = { hijriDate, gregorianDate: currentDate };
     cacheStore.set(cacheKey, anchor);
 
     return json(hijriDate);

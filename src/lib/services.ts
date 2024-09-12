@@ -1,7 +1,7 @@
 import memoize from 'lodash.memoize';
 import { MyMasjidApi, OwnApi } from './api';
 import type { HijriDate, HijriDateAnchor } from './types';
-import { getDayOfYear } from './utils';
+import { getHijriDateFromAnchor } from './utils';
 import { LocalStorageCache } from './utils/cache';
 
 export const getCountries = memoize(MyMasjidApi.getCountries);
@@ -12,19 +12,16 @@ export const getTimings = memoize(MyMasjidApi.getTimings);
 
 export async function getHijriDate(countryId: number): Promise<HijriDate> {
   const cacheKey = `api::hijri-date::${countryId}`;
-  const cachedDate = LocalStorageCache.get<HijriDateAnchor>(cacheKey);
+  let cachedDate = LocalStorageCache.get<HijriDateAnchor>(cacheKey);
+  if (cachedDate?.gregorianDate == null) cachedDate = null; // TODO: remove in later version - this is here for backward compatibility
 
-  const currentDayOfYear = getDayOfYear(new Date());
-  if (cachedDate != null) {
-    const { hijriDate, gregorianDayOfYear } = cachedDate;
-    const daysDiff = currentDayOfYear - gregorianDayOfYear;
-    hijriDate.day += daysDiff;
+  const currentDate = new Date().toISOString();
 
-    if (daysDiff >= 0 && hijriDate.day <= 29) return hijriDate;
-  }
+  let hijriDate = getHijriDateFromAnchor(cachedDate, currentDate);
+  if (hijriDate != null) return hijriDate;
+  hijriDate = await OwnApi.getHijriDate(countryId)!;
 
-  const hijriDate = await OwnApi.getHijriDate(countryId)!;
-  const dateAnchor: HijriDateAnchor = { hijriDate, gregorianDayOfYear: currentDayOfYear };
+  const dateAnchor: HijriDateAnchor = { hijriDate, gregorianDate: currentDate };
   LocalStorageCache.set(cacheKey, dateAnchor);
 
   return hijriDate;

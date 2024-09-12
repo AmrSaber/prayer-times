@@ -1,9 +1,11 @@
+import type { Nullable } from '$lib/types';
+
 export type CachedMeta = { expiresAt?: number };
 
 export type Cache = {
   has: (key: string) => boolean;
   set: (key: string, value: unknown) => void;
-  get: <T>(key: string) => T | undefined;
+  get: <T>(key: string) => Nullable<T>;
   delete: (key: string) => void;
 };
 

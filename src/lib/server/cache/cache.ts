@@ -7,7 +7,7 @@ type Record = {
   expires_at: number | null;
 };
 
-const CACHE_VERSION = 1;
+const CACHE_VERSION = 2;
 const CACHE_VERSION_KEY = 'cache::version';
 
 export class SqliteCache {

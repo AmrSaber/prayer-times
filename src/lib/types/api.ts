@@ -6,5 +6,5 @@ export type HijriDate = {
 
 export type HijriDateAnchor = {
   hijriDate: HijriDate;
-  gregorianDayOfYear: number;
+  gregorianDate: string; // ISO-date
 };
