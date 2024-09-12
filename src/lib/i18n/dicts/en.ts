@@ -44,5 +44,6 @@ export default {
   sunrise: 'Sunrise',
   'friday-prayer': 'Jummah',
   midnight: 'Midnight',
-  'last-third-of-night': 'Last third of night',
+  'last-third-of-night': 'Last third of night (Begins)',
+  'first-third-of-night': 'First third of night (Ends)',
 };

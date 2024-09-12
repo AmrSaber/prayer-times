@@ -44,5 +44,6 @@ export default {
   sunrise: 'شروق الشمس',
   'friday-prayer': 'الجمعة',
   midnight: 'منتصف الليل',
-  'last-third-of-night': 'الثلث الأخير من الليل',
+  'last-third-of-night': 'بداية الثلث الأخير من الليل',
+  'first-third-of-night': 'نهاية الثلث الأول من الليل',
 };

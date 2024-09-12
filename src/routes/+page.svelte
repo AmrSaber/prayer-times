@@ -4,7 +4,7 @@
   import { selectedLanguage, selectedMosque, selectedCountry, selectedMosqueId, showTimerSeconds } from '$lib/stores';
   import { Timing, type HijriDate } from '$lib/types';
   import type { DayTimings } from '$lib/types/pure';
-  import { getLastThirdOfNight, getMidnight } from '$lib/utils';
+  import { getFirstThirdOfNight, getLastThirdOfNight, getMidnight } from '$lib/utils';
   import { markImminentElement } from '$lib/helpers';
   import { fade } from 'svelte/transition';
   import { LocalStorageCache } from '$lib/utils/cache';
@@ -25,6 +25,7 @@
   let hijriDate: HijriDate | null = null;
   $: midnightTime = getMidnight(dayTimings);
   $: lastThirdTime = getLastThirdOfNight(dayTimings);
+  $: firstThirdTime = getFirstThirdOfNight(dayTimings);
 
   let nextPrayerTime: Timing | undefined;
   let nextPrayerLabel: string | undefined;
@@ -264,15 +265,18 @@
 
     <div class="table" id="other-timings">
       <span class="label">{t('sunrise')}</span>
-      <span class="prayer-time">{dayTimings?.sunrise.format()}</span>
+      <span>{dayTimings?.sunrise.format()}</span>
 
       {#if isFriday}
         <span class="label">{t('friday-prayer')}</span>
         <span class="prayer-time">{fridayPrayerTiming?.format()}</span>
       {/if}
 
+      <span class="label">{t('first-third-of-night')}</span>
+      <span>{firstThirdTime?.format()}</span>
+
       <span class="label">{t('midnight')}</span>
-      <span class="prayer-time">{midnightTime?.format()}</span>
+      <span>{midnightTime?.format()}</span>
 
       <span class="label">{t('last-third-of-night')}</span>
       <span>{lastThirdTime?.format()}</span>
