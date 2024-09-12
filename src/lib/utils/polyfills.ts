@@ -1,4 +1,3 @@
-import { browser } from '$app/environment';
 import serverAssert from 'node:assert/strict';
 
-export const assert = browser ? console.assert : serverAssert;
+export const assert = globalThis.window != null ? console.assert : serverAssert;
