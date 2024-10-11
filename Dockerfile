@@ -22,10 +22,17 @@ RUN bun --bun run build
 # Run using bun
 FROM oven/bun:1-alpine
 
+# Health check
+RUN apk add curl
+HEALTHCHECK CMD curl -f "http://localhost:$PORT/api/health" || exit 1
+
+# TODO: remove when graceful shutdown is handled
+STOPSIGNAL SIGKILL
+
 COPY --from=build /app/build /app
 
 ENV PORT=80
-EXPOSE 80
+EXPOSE $PORT
 
 WORKDIR /app
 CMD ["bun", "/app/index.js"]
