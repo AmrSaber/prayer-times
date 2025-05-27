@@ -22,18 +22,7 @@
 </script>
 
 <svelte:head>
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-R76D3CED01"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag() {
-      dataLayer.push(arguments);
-    }
-    gtag('js', new Date());
-    gtag('config', 'G-R76D3CED01');
-  </script>
-
   <link rel="manifest" href="manifest.json" />
-
   <title>{t('title')}</title>
 </svelte:head>
 
