@@ -265,7 +265,7 @@
 
     <div class="table" id="other-timings">
       <span class="label">{t('sunrise')}</span>
-      <span>{dayTimings?.sunrise.format()}</span>
+      <span class="prayer-time">{dayTimings?.sunrise.format()}</span>
 
       {#if isFriday}
         <span class="label">{t('friday-prayer')}</span>
