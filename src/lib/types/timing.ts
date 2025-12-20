@@ -90,10 +90,9 @@ export class Timing {
         minutes++;
         seconds = 0;
 
-        if (minutes >= 60) {
-          hours += Math.floor(minutes / 60);
-          minutes %= 60;
-        }
+        // Normalize hours/minutes after minutes update
+        hours += Math.floor(minutes / 60);
+        minutes %= 60;
       }
 
       values.push(hours, minutes);
@@ -121,6 +120,15 @@ export class Timing {
    */
   getTimeUntil(): number {
     return this.toDate().valueOf() - Date.now();
+  }
+
+  /**
+   * Assumes object represents a duration, returns duration in seconds.
+   *
+   * @returns duration in seconds
+   */
+  toSeconds(): number {
+    return this.hours * 60 * 60 + this.minutes * 60 + this.seconds;
   }
 }
 

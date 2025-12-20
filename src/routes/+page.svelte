@@ -133,10 +133,7 @@
     timeUntilNextPrayer.seconds = nextPrayerTime.seconds - now.getSeconds();
 
     timeUntilNextPrayer.normalize();
-    isImminent =
-      timeUntilNextPrayer.hours == 0 &&
-      ((timeUntilNextPrayer.minutes < 5 && timeUntilNextPrayer.seconds > 0) ||
-        (timeUntilNextPrayer.minutes == 5 && timeUntilNextPrayer.seconds == 0));
+    isImminent = timeUntilNextPrayer.toSeconds() <= 5 * 60;
   }
 
   async function cacheTimings() {
