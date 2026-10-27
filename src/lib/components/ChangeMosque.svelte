@@ -30,7 +30,8 @@
   let mode = Mode.CHANGE_MOSQUE;
   if ($selectedCountry == null) {
     mode = Mode.CHANGE_COUNTRY;
-  } else if ($selectedCity == null) {
+  } else if ($selectedCity == null || $selectedCity.complete) {
+    // A complete city has no mosque to pick, so changing it means picking another city
     mode = Mode.CHANGE_CITY;
   }
 
