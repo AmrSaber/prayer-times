@@ -18,13 +18,22 @@
   export let onItemSelected: (item: ListItem) => unknown;
   export let persistenceKey: string;
 
+  // Below this many items, searching adds more clutter than it saves
+  const SEARCH_MIN_ITEMS = 8;
+
   $: t = getTranslator($selectedLanguage as Language);
 
   const recents = createPersistentStore<ListItem[]>(`cache::recent::${persistenceKey}`, []);
   $: recentIds = $recents?.map((item) => item.id) ?? [];
 
   let isLoading = true;
-  let items: ListItem[];
+  let items: ListItem[] = [];
+  let query = '';
+
+  $: needle = query.trim().toLowerCase();
+  const matches = (item: ListItem, needle: string) => item.label.toLowerCase().includes(needle);
+  $: visibleRecents = ($recents ?? []).filter((item) => matches(item, needle));
+  $: visibleItems = items.filter((item) => !recentIds.includes(item.id) && matches(item, needle));
 
   function onSelected(selected: ListItem) {
     if (items.length > 5) {
@@ -47,33 +56,49 @@
       <Loader />
     </div>
   {:else}
-    <div>{title}</div>
-    <ul>
-      {#if $recents?.length != 0}
-        {#each $recents ?? [] as item (item.id)}
-          <li class="clickable">
-            <button on:click={() => onSelected(item)} class="not-button clickable">
-              {item.label}
-            </button>
-          </li>
-        {/each}
+    <div class="title muted">{title}</div>
 
-        <div class="separator">
+    {#if items.length > SEARCH_MIN_ITEMS}
+      <input
+        class="search"
+        type="search"
+        placeholder={t('search')}
+        aria-label={t('search')}
+        bind:value={query}
+      />
+    {/if}
+
+    <ul>
+      {#each visibleRecents as item (item.id)}
+        <li>
+          <button on:click={() => onSelected(item)} class="not-button row">
+            <span class="star" aria-hidden="true">★</span>
+            {item.label}
+          </button>
+        </li>
+      {/each}
+
+      {#if $recents?.length}
+        <li class="separator">
           <hr />
           <button class="not-button clickable" on:click={() => ($recents = [])}>
             {t('clear')}
           </button>
-        </div>
+        </li>
       {/if}
 
-      {#each items.filter((item) => !recentIds.includes(item.id)) as item (item.id)}
-        <li class="clickable">
-          <button on:click={() => onSelected(item)} class="not-button clickable">
+      {#each visibleItems as item (item.id)}
+        <li>
+          <button on:click={() => onSelected(item)} class="not-button row">
             {item.label}
           </button>
         </li>
       {/each}
     </ul>
+
+    {#if visibleRecents.length + visibleItems.length === 0}
+      <div class="empty muted">{t('no-results')}</div>
+    {/if}
   {/if}
 </div>
 
@@ -82,34 +107,72 @@
     padding: 2em;
   }
 
+  .title {
+    font-size: 0.875rem;
+    margin-block: 0.25rem 0.75rem;
+  }
+
+  .search {
+    width: 100%;
+    padding: 0.65rem 0.9rem;
+    margin-bottom: 0.5rem;
+
+    font: inherit;
+    color: inherit;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+  }
+
   ul {
-    padding-inline-start: 2rem;
-    margin-block: 0.5rem;
-  }
-
-  li {
-    padding-block: 0.25rem;
-  }
-
-  li button {
+    list-style: none;
     padding: 0;
+    margin: 0;
+  }
+
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 0.6rem;
+    text-align: start;
+
+    transition: background-color 0.12s;
+  }
+
+  .row:hover,
+  .row:focus-visible {
+    background: var(--surface-hover);
+  }
+
+  .star {
+    color: var(--accent);
+    font-size: 0.8em;
   }
 
   .separator {
     display: flex;
-    width: 100%;
-    gap: 0.25rem;
-
-    justify-content: center;
+    gap: 0.5rem;
     align-items: center;
+    padding-block: 0.25rem;
   }
 
   .separator hr {
     flex-grow: 1;
-    height: 0px;
+    height: 0;
+    border: none;
+    border-top: 1px solid var(--border);
   }
 
   .separator button {
-    font-size: 0.75em;
+    font-size: 0.75rem;
+  }
+
+  .empty {
+    text-align: center;
+    padding: 1.5rem;
   }
 </style>

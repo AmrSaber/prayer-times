@@ -2,8 +2,8 @@
 
 <style>
   .loader {
-    border: calc(var(--size, 2em) / 7) solid #f3f3f3; /* Light grey */
-    border-top: calc(var(--size, 2em) / 7) solid #3498db; /* Blue */
+    border: calc(var(--size, 2em) / 7) solid var(--border);
+    border-top-color: var(--accent);
     border-radius: 50%;
     width: var(--size, 2em);
     height: var(--size, 2em);
@@ -11,10 +11,7 @@
   }
 
   @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
+    to {
       transform: rotate(360deg);
     }
   }

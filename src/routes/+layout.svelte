@@ -46,17 +46,18 @@
 <style>
   #spacer {
     flex-grow: 1;
-    min-height: 2rem;
+    min-height: 0.5rem;
   }
 
   footer {
-    padding-block: 0.5rem;
-    padding-inline: 1rem;
+    padding: 0.5rem;
 
     width: 100%;
     display: flex;
-    justify-content: end;
+    justify-content: center;
     align-items: center;
+    gap: 0.5rem;
+    color: var(--muted);
   }
 
   footer .powered-by {
@@ -64,7 +65,7 @@
   }
 
   footer .github-mark {
-    width: 1.75rem;
-    padding: 0.25rem;
+    width: 2rem;
+    padding: 0.4rem;
   }
 </style>

@@ -18,6 +18,13 @@ export default {
   change: 'تغيير',
   to: 'إلى',
   clear: 'إزالة',
+  search: 'بحث…',
+  'no-results': 'لا توجد نتائج',
+  close: 'إغلاق',
+  country: 'البلد',
+  city: 'المدينة',
+  mosque: 'المسجد',
+  'toggle-seconds': 'اضغط لإظهار أو إخفاء الثواني',
 
   muharram: 'محرَّم',
   safar: 'صَفَر',

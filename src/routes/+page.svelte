@@ -5,17 +5,28 @@
   import { Timing, type HijriDate } from '$lib/types';
   import type { DayTimings } from '$lib/types/pure';
   import { getFirstThirdOfNight, getLastThirdOfNight, getMidnight } from '$lib/utils';
-  import { markImminentElement } from '$lib/helpers';
   import { fade } from 'svelte/transition';
   import { LocalStorageCache } from '$lib/utils/cache';
   import type { TimingsModel } from '$lib/api';
   import { getTranslator } from '$lib/i18n';
   import type { Language } from '$lib/i18n/enums';
   import Title from '$lib/components/Title.svelte';
-  import Spacer from '$lib/components/spacer.svelte';
-  import Loader from '$lib/components/Loader.svelte';
   import { UK_ID } from '$lib/constants';
   import ChangeMosque from '$lib/components/ChangeMosque.svelte';
+
+  type PrayerKey = 'fajr' | 'zuhr' | 'asr' | 'maghrib' | 'isha';
+  type EventKey = PrayerKey | 'sunrise' | 'friday-prayer';
+
+  const PRAYERS: { key: PrayerKey; get: (d: DayTimings) => DayTimings['fajr'] }[] = [
+    { key: 'fajr', get: (d) => d.fajr },
+    { key: 'zuhr', get: (d) => d.zuhr },
+    { key: 'asr', get: (d) => d.asr },
+    { key: 'maghrib', get: (d) => d.sunset },
+    { key: 'isha', get: (d) => d.isha },
+  ];
+
+  const DAY_MS = 24 * 60 * 60 * 1000;
+  const IMMINENT_MS = 5 * 60 * 1000;
 
   let isLoading = false;
   $: timingsCacheKey = `cache::mosques::${$selectedMosqueId}::timings`;
@@ -27,15 +38,76 @@
   $: lastThirdTime = getLastThirdOfNight(dayTimings);
   $: firstThirdTime = getFirstThirdOfNight(dayTimings);
 
-  let nextPrayerTime: Timing | undefined;
-  let nextPrayerLabel: string | undefined;
-  let timeUntilNextPrayer: Timing | undefined;
-  let isImminent = false;
-
-  let isFriday: boolean | undefined;
+  let isFriday = false;
   let fridayPrayerTiming: Timing | undefined;
 
+  // Re-evaluated on every tick; everything about "next prayer" derives from it
+  let now = new Date();
+  $: today = now.toDateString();
+
   $: showHijriDate = $selectedCountry?.id === UK_ID;
+  $: if (!showHijriDate) hijriDate = null;
+
+  // Everything that counts down: the five prayers, sunrise and (on Fridays) Jummah
+  $: events = buildEvents(dayTimings, fridayPrayerTiming, isFriday);
+  $: next = findNext(events, now);
+  $: msToNext = next ? next.msUntil : 0;
+  $: isImminent = next != null && msToNext <= IMMINENT_MS;
+  $: progress = next ? 1 - msToNext / next.span : 0;
+  $: countdown = formatDuration(msToNext, $showTimerSeconds ?? true);
+
+  // Iqamah is tracked separately: it can still be ahead after its azan has passed
+  $: nextIqamah = PRAYERS.filter((p) => !(p.key === 'zuhr' && isFriday))
+    .map((p) => ({ key: p.key, ms: dayTimings ? msUntil(p.get(dayTimings).congregation, now) : Infinity }))
+    .sort((a, b) => a.ms - b.ms)
+    .at(0)?.key;
+
+  function buildEvents(d: DayTimings | null, jumah: Timing | undefined, friday: boolean) {
+    if (d == null) return [];
+
+    const list: { key: EventKey; timing: Timing }[] = PRAYERS.map((p) => ({ key: p.key, timing: p.get(d).start }));
+    list.push({ key: 'sunrise', timing: d.sunrise });
+    if (friday && jumah) list.push({ key: 'friday-prayer', timing: jumah });
+
+    return list.sort((a, b) => a.timing.toSeconds() - b.timing.toSeconds());
+  }
+
+  function findNext(list: typeof events, at: Date) {
+    if (list.length === 0) return null;
+
+    const ranked = list.map((event, index) => ({ event, index, ms: msUntil(event.timing, at) }));
+    const soonest = ranked.reduce((a, b) => (b.ms < a.ms ? b : a));
+
+    // Distance from the previous event (wrapping to yesterday) gives the progress bar its span
+    const previous = list[(soonest.index - 1 + list.length) % list.length];
+    const span = (msUntil(soonest.event.timing, at) - msUntil(previous.timing, at) + DAY_MS) % DAY_MS || DAY_MS;
+
+    return { key: soonest.event.key, timing: soonest.event.timing, msUntil: soonest.ms, span };
+  }
+
+  /** Milliseconds until the next occurrence of a time of day. */
+  function msUntil(timing: Timing, at: Date): number {
+    const target = new Date(at);
+    target.setHours(timing.hours, timing.minutes, timing.seconds, 0);
+    if (target <= at) target.setDate(target.getDate() + 1);
+    return target.valueOf() - at.valueOf();
+  }
+
+  function formatDuration(ms: number, withSeconds: boolean): string {
+    const totalSeconds = Math.round(ms / 1000);
+    const duration = new Timing();
+    duration.hours = Math.floor(totalSeconds / 3600);
+    duration.minutes = Math.floor((totalSeconds % 3600) / 60);
+    duration.seconds = totalSeconds % 60;
+
+    return duration.format(withSeconds);
+  }
+
+  function isPast(timing: Timing | undefined, at: Date): boolean {
+    if (timing == null) return false;
+    const secondsOfDay = at.getHours() * 3600 + at.getMinutes() * 60 + at.getSeconds();
+    return timing.toSeconds() <= secondsOfDay;
+  }
 
   async function setup() {
     if ($selectedMosqueId == null) {
@@ -57,30 +129,18 @@
     }
   }
 
-  async function bind() {
-    // Revalidate in the background
-    cacheTimings();
-
-    // Fetch and set hijri date in the background
-    if (showHijriDate) setHijriDate();
-
+  async function refresh() {
+    if ($selectedMosqueId == null || !LocalStorageCache.has(timingsCacheKey)) return;
     updateUiTimings();
-
-    // Wait for UI to update so that the related tags are displayed
-    await tick();
-
-    markNextPrayer();
-    updateTimer();
   }
 
   function updateUiTimings() {
     const timings = LocalStorageCache.get(timingsCacheKey) as TimingsModel;
 
-    const now = new Date();
-    const today = now.getUTCDate();
-    const thisMonth = now.getUTCMonth() + 1;
-
-    const todayTiming = timings.salahTimings.find((t) => t.day == today && t.month == thisMonth);
+    const current = new Date();
+    const todayTiming = timings.salahTimings.find(
+      (t) => t.day == current.getDate() && t.month == current.getMonth() + 1,
+    );
 
     if (todayTiming == null) {
       throw new Error("could not find today's timing");
@@ -111,32 +171,12 @@
     };
 
     fridayPrayerTiming = new Timing(timings.masjidSettings.jumahTime);
-    isFriday = now.getDay() == 5;
-  }
-
-  function markNextPrayer() {
-    // Mark next values
-    const nextPrayer = markImminentElement('.prayer-time');
-    markImminentElement('.congregation-time');
-
-    nextPrayerTime = new Timing(nextPrayer?.innerHTML);
-    nextPrayerLabel = document.querySelector('.label:has(+ .prayer-time.next)')?.innerHTML;
-  }
-
-  function updateTimer() {
-    if (nextPrayerTime == null) return;
-
-    const now = new Date();
-    timeUntilNextPrayer = new Timing();
-    timeUntilNextPrayer.hours = nextPrayerTime.hours - now.getHours();
-    timeUntilNextPrayer.minutes = nextPrayerTime.minutes - now.getMinutes();
-    timeUntilNextPrayer.seconds = nextPrayerTime.seconds - now.getSeconds();
-
-    timeUntilNextPrayer.normalize();
-    isImminent = timeUntilNextPrayer.toSeconds() <= 5 * 60;
+    isFriday = current.getDay() == 5;
   }
 
   async function cacheTimings() {
+    if ($selectedMosqueId == null) return;
+
     const timings = await getTimings($selectedMosqueId!);
     if (timings != null) LocalStorageCache.set(timingsCacheKey, timings);
   }
@@ -160,124 +200,131 @@
     $showTimerSeconds = !$showTimerSeconds;
   }
 
+  // Pick up a new day (and its timings) without a reload
+  $: if (today && !isLoading) refresh();
+  $: if (today && showHijriDate) setHijriDate();
+
   onMount(() => {
-    // Whenever the selected mosque id changes, run setup, then update UI (to initialize global variables) then bind
-    selectedMosqueId.subscribe(() => setup().then(tick).then(bind));
+    // Whenever the selected mosque id changes, run setup, then show cached timings and revalidate in the background
+    const unsubscribe = selectedMosqueId.subscribe(() =>
+      setup()
+        .then(tick)
+        .then(refresh)
+        .then(cacheTimings)
+        .then(refresh)
+        .catch(() => undefined),
+    );
 
-    // Re-bind on language change so that any saved string is localized
-    selectedLanguage.subscribe(bind);
-
-    const bindIntervalId = setInterval(bind, 500);
-    return () => clearInterval(bindIntervalId);
+    const tickIntervalId = setInterval(() => (now = new Date()), 500);
+    return () => {
+      unsubscribe();
+      clearInterval(tickIntervalId);
+    };
   });
 
   $: t = getTranslator($selectedLanguage as Language);
+  $: nextTime = next?.timing.format();
 </script>
 
 <div in:fade>
-  <Title />
+  <Title>
+    {#if hijriDate != null}
+      <p class="hijri muted">
+        {hijriDate.day}
+        {t(hijriDate.month)}
+        {hijriDate.year}
+        <a href="https://moonsighting.org.uk" target="_blank" rel="noreferrer" aria-label="moonsighting.org.uk">*</a>
+      </p>
+    {/if}
+  </Title>
 
   {#if isLoading}
-    <div class="loader-container centerer">
-      <Loader />
-    </div>
+    <div class="skeleton" style="height: 4rem; margin-bottom: 1rem" />
+    <div class="skeleton" style="height: 10rem; margin-bottom: 1rem" />
+    <div class="skeleton" style="height: 16rem" />
   {:else}
-    {#if showHijriDate && hijriDate != null}
-      <div class="date">
-        {hijriDate?.day}
-        {t(hijriDate?.month)}
-        {hijriDate?.year} <a href="https://moonsighting.org.uk" target="_blank">*</a>
+    <section class="card mosque">
+      <div class="mosque-info" title={t('displaying-from')}>
+        <h3>{$selectedMosque?.name.split('&').at(0)?.trim()}</h3>
+        <div class="muted small">{$selectedMosque?.city}, {$selectedMosque?.country}</div>
+      </div>
+      <button class="pill" on:click={() => (showChangeMosque = true)}>{t('change')}</button>
+    </section>
+
+    <section class="card hero" class:imminent={isImminent}>
+      <div class="hero-label">
+        {#key next?.key}
+          <span in:fade>{t(next?.key)}</span>
+        {/key}
+        <span class="muted">· {nextTime}</span>
       </div>
 
-      <Spacer />
-    {/if}
-
-    <div>{t('displaying-from')}</div>
-    <h3>
-      {$selectedMosque?.name.split('&').at(0)?.trim()}, <br />
-      {$selectedMosque?.city}, <br />
-      {$selectedMosque?.country}
-    </h3>
-
-    <div id="select-holder">
-      <button class="not-button clickable" on:click={() => (showChangeMosque = true)}>
-        {t('change')}
+      <button
+        class="not-button countdown"
+        class:danger={isImminent}
+        title={t('toggle-seconds')}
+        aria-label={t('toggle-seconds')}
+        on:click={toggleShowTimerSeconds}
+      >
+        {countdown}
       </button>
-    </div>
 
-    <Spacer />
+      <div class="progress" role="presentation">
+        <div class="bar" style="width: {Math.min(Math.max(progress, 0), 1) * 100}%" />
+      </div>
+    </section>
 
-    <div id="prayer-timer">
-      <button class:danger={isImminent} class="not-button" id="timer" on:click={toggleShowTimerSeconds}>
-        {timeUntilNextPrayer?.format($showTimerSeconds ?? true)}
-      </button>
-      {t('to')}
-      {#key nextPrayerLabel}
-        <span class="label next">
-          {nextPrayerLabel}
-          ({nextPrayerTime?.format()})
-        </span>
-      {/key}
-    </div>
+    <section class="card prayers">
+      <div class="row head muted small">
+        <span />
+        <span>{t('azan')}</span>
+        <span>{t('iqamah')}</span>
+      </div>
 
-    <div class="table" id="prayer-timings">
-      <hr class="separator" />
+      {#each PRAYERS as prayer (prayer.key)}
+        {@const timing = dayTimings ? prayer.get(dayTimings) : undefined}
+        <div
+          class="row"
+          class:current={next?.key === prayer.key}
+          class:past={isPast(timing?.start, now) && next?.key !== prayer.key}
+        >
+          <span class="label">{t(prayer.key)}</span>
+          <span class="time">{timing?.start.format()}</span>
+          <span class="time" class:accent={nextIqamah === prayer.key}>
+            {prayer.key === 'zuhr' && isFriday ? '-' : timing?.congregation.format()}
+          </span>
+        </div>
+      {/each}
+    </section>
 
-      <span />
-      <span>{t('azan')}</span>
-      <span>{t('iqamah')}</span>
-
-      <span class="label">{t('fajr')}</span>
-      <span class="prayer-time">{dayTimings?.fajr.start.format()}</span>
-      <span class="congregation-time">
-        {dayTimings?.fajr.congregation.format()}
-      </span>
-
-      <span class="label">{t('zuhr')}</span>
-      <span class="prayer-time">{dayTimings?.zuhr.start.format()}</span>
-      <span class="congregation-time">
-        {isFriday ? '-' : dayTimings?.zuhr.congregation.format()}
-      </span>
-
-      <span class="label">{t('asr')}</span>
-      <span class="prayer-time">{dayTimings?.asr.start.format()}</span>
-      <span class="congregation-time">
-        {dayTimings?.asr.congregation.format()}
-      </span>
-
-      <span class="label">{t('maghrib')}</span>
-      <span class="prayer-time">{dayTimings?.sunset.start.format()}</span>
-      <span class="congregation-time">
-        {dayTimings?.sunset.congregation.format()}
-      </span>
-
-      <span class="label">{t('isha')}</span>
-      <span class="prayer-time">{dayTimings?.isha.start.format()}</span>
-      <span class="congregation-time">
-        {dayTimings?.isha.congregation.format()}
-      </span>
-    </div>
-
-    <Spacer --size="2rem" />
-
-    <div class="table" id="other-timings">
-      <span class="label">{t('sunrise')}</span>
-      <span class="prayer-time">{dayTimings?.sunrise.format()}</span>
+    <section class="card others">
+      <div class="other" class:accent={next?.key === 'sunrise'}>
+        <span>{t('sunrise')}</span>
+        <span class="time">{dayTimings?.sunrise.format()}</span>
+      </div>
 
       {#if isFriday}
-        <span class="label">{t('friday-prayer')}</span>
-        <span class="prayer-time">{fridayPrayerTiming?.format()}</span>
+        <div class="other" class:accent={next?.key === 'friday-prayer'}>
+          <span>{t('friday-prayer')}</span>
+          <span class="time">{fridayPrayerTiming?.format()}</span>
+        </div>
       {/if}
 
-      <span class="label">{t('first-third-of-night')}</span>
-      <span>{firstThirdTime?.format()}</span>
+      <div class="other muted">
+        <span>{t('first-third-of-night')}</span>
+        <span class="time">{firstThirdTime?.format()}</span>
+      </div>
 
-      <span class="label">{t('midnight')}</span>
-      <span>{midnightTime?.format()}</span>
+      <div class="other muted">
+        <span>{t('midnight')}</span>
+        <span class="time">{midnightTime?.format()}</span>
+      </div>
 
-      <span class="label">{t('last-third-of-night')}</span>
-      <span>{lastThirdTime?.format()}</span>
-    </div>
+      <div class="other muted">
+        <span>{t('last-third-of-night')}</span>
+        <span class="time">{lastThirdTime?.format()}</span>
+      </div>
+    </section>
   {/if}
 </div>
 
@@ -286,91 +333,158 @@
 {/if}
 
 <style>
-  .date {
-    text-align: end;
-    font-weight: bold;
+  section {
+    margin-bottom: 0.6rem;
   }
 
-  .date a {
-    padding: 0.25rem;
+  .small {
+    font-size: 0.75rem;
   }
 
-  h3 {
+  .time {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hijri {
+    margin: 0.15rem 0 0;
+    font-size: 0.85rem;
+  }
+
+  .mosque {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.6rem 0.9rem;
+  }
+
+  .mosque h3 {
     margin: 0;
-    margin-top: 0.5rem;
-    text-align: center;
+    font-size: 1rem;
     direction: ltr;
+    text-align: start;
   }
 
-  #select-holder {
-    display: flex;
-    justify-content: end;
+  .mosque .pill {
+    padding: 0.3rem 0.75rem;
+    font-size: 0.85rem;
   }
 
-  #select-holder * {
-    padding: 0.5rem;
+  .hero {
+    padding: 0.75rem 1rem 0.9rem;
+    text-align: center;
+    transition: border-color 0.3s, box-shadow 0.3s;
   }
 
-  .loader-container {
-    padding: 4em;
+  .hero.imminent {
+    border-color: var(--danger);
+    animation: pulse 2s ease-in-out infinite;
   }
 
-  .table {
-    width: fit-content;
-    display: grid;
+  @keyframes pulse {
+    50% {
+      box-shadow: 0 0 0 6px var(--danger-soft);
+    }
   }
 
-  #prayer-timings {
-    margin: 2rem 1.5rem;
-    padding: 0 1rem;
-
-    grid-auto-flow: column;
-    grid-template-rows: repeat(4, 1rem);
-
-    row-gap: 1rem;
-    column-gap: 1.5rem;
-  }
-
-  #prayer-timings > * {
-    display: flex;
-    justify-content: center;
-  }
-
-  #prayer-timings > .separator {
-    grid-column: 1 / span 6;
-    grid-row: 2;
-    width: 100%;
-  }
-
-  .label {
+  .hero-label {
+    font-size: 0.95rem;
     font-weight: bold;
-  }
-
-  :global(.next),
-  .label:has(+ .next) {
     color: var(--accent);
   }
 
-  span {
-    transition: color 0.25s;
+  .hero.imminent .hero-label {
+    color: var(--danger);
   }
 
-  #prayer-timer {
+  .countdown {
+    display: block;
+    width: 100%;
+    margin-block: 0 0.6rem;
+    padding: 0;
+
+    font-size: clamp(2.25rem, 11vw, 3rem);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+    direction: ltr;
+  }
+
+  .progress {
+    height: 0.3rem;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    overflow: hidden;
+  }
+
+  .bar {
+    height: 100%;
+    border-radius: inherit;
+    background: var(--accent);
+    transition: width 0.5s linear;
+  }
+
+  .hero.imminent .progress {
+    background: var(--danger-soft);
+  }
+
+  .hero.imminent .bar {
+    background: var(--danger);
+  }
+
+  .prayers {
+    padding: 0.35rem;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 4.5rem 4.5rem;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.6rem;
+    transition: background-color 0.25s, opacity 0.25s;
+  }
+
+  .row > :not(.label) {
     text-align: center;
+  }
+
+  .row.head {
+    padding-block: 0.2rem;
+  }
+
+  .row .label {
     font-weight: bold;
-    margin-block: 2rem;
   }
 
-  #timer {
-    font-family: monospace;
-    font-size: 0.9rem; /* Monospace is too big! */
-
-    cursor: default;
+  .row.current {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: bold;
   }
 
-  #other-timings {
-    grid-auto-flow: row;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem 1rem;
+  .row.past {
+    opacity: 0.5;
+  }
+
+  .accent {
+    color: var(--accent);
+    font-weight: bold;
+  }
+
+  .others {
+    padding: 0.25rem 0.9rem;
+  }
+
+  .other {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: 0.4rem;
+    font-size: 0.95rem;
+  }
+
+  .other + .other {
+    border-top: 1px solid var(--border);
   }
 </style>

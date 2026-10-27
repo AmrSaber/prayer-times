@@ -11,9 +11,39 @@
 }
 
 :root {
-  --clickable-color: dodgerblue;
-  --clickable-hover: #0a4988;
+  color-scheme: light dark;
+
+  --bg: #f3f5f8;
+  --surface: #ffffff;
+  --surface-hover: #eef2f6;
+  --text: #1b2430;
+  --muted: #566170;
+  --border: #e1e6ec;
   --accent: #1979b1;
+  --accent-soft: rgb(25 121 177 / 0.12);
+  --danger: #d9480f;
+  --danger-soft: rgb(217 72 15 / 0.12);
+  --shadow: 0 1px 2px rgb(16 24 40 / 0.06), 0 4px 16px rgb(16 24 40 / 0.06);
+  --radius: 1rem;
+
+  --clickable-color: var(--accent);
+  --clickable-hover: var(--text);
+}
+
+@media screen and (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1419;
+    --surface: #182029;
+    --surface-hover: #212b36;
+    --text: #e8edf2;
+    --muted: #a9b5c1;
+    --border: #28333f;
+    --accent: #4aa8e0;
+    --accent-soft: rgb(74 168 224 / 0.16);
+    --danger: #ff8a5c;
+    --danger-soft: rgb(255 138 92 / 0.16);
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 4px 16px rgb(0 0 0 / 0.3);
+  }
 }
 
 * {
@@ -22,21 +52,19 @@
 
 .arabic {
   direction: rtl;
-  font-family: 'Almarai', Arial, Helvetica, sans-serif !important;
+  font-family: 'Almarai', system-ui, Arial, sans-serif !important;
 }
 
 html {
-  /* Interactive font-size based on screen size - this will start scaling at vw of 562px */
-  font-size: min(2.8vw, 16px);
+  font-size: 100%;
 }
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
-  color: #333;
-  background-color: #fdfdfd;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  color: var(--text);
+  background-color: var(--bg);
 
   min-height: 100vh;
-  min-width: 100vw;
   margin: 0;
 
   display: flex;
@@ -44,9 +72,20 @@ body {
 }
 
 main {
-  width: fit-content;
+  width: min(100%, 34rem);
   margin-inline: auto;
-  padding-inline: 1.5rem;
+  padding-inline: 1rem;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.muted {
+  color: var(--muted);
 }
 
 .not-button {
@@ -59,6 +98,17 @@ main {
   font-weight: inherit;
 }
 
+button {
+  cursor: pointer;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 a.not-link,
 a.not-link:visited,
 a.not-link:active {
@@ -66,11 +116,27 @@ a.not-link:active {
   text-decoration: none;
 }
 
+/* Small rounded button used for secondary actions */
+.pill {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: none;
+  font: inherit;
+  font-weight: bold;
+  border-radius: 999px;
+  padding: 0.3rem 0.75rem;
+  font-weight: bold;
+  transition: background-color 0.15s;
+}
+
+.pill:hover {
+  background: var(--surface-hover);
+}
+
 .clickable {
-  color: var(--clickable-color);
+  color: var(--accent);
   text-decoration: none;
   cursor: pointer;
-  padding: 0.5rem;
 }
 
 .clickable:hover {
@@ -80,7 +146,7 @@ a.not-link:active {
 a,
 a:visited,
 a:active {
-  color: var(--clickable-color);
+  color: var(--accent);
   text-decoration: none;
 }
 
@@ -89,13 +155,36 @@ a:hover {
 }
 
 .danger {
-  color: red;
+  color: var(--danger);
 }
 
 .centerer {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-hover) 25%, var(--border) 50%, var(--surface-hover) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+  border-radius: 0.5rem;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 @media screen and (prefers-color-scheme: light) {
@@ -105,11 +194,6 @@ a:hover {
 }
 
 @media screen and (prefers-color-scheme: dark) {
-  body {
-    color: white;
-    background-color: #222;
-  }
-
   .light-only {
     display: none;
   }

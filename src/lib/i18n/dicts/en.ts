@@ -18,6 +18,13 @@ export default {
   change: 'change',
   to: 'to',
   clear: 'clear',
+  search: 'Search…',
+  'no-results': 'No results',
+  close: 'Close',
+  country: 'Country',
+  city: 'City',
+  mosque: 'Mosque',
+  'toggle-seconds': 'Tap to show or hide seconds',
 
   muharram: 'Muharram',
   safar: 'Safar',
