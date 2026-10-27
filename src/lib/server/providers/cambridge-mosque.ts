@@ -24,9 +24,7 @@ export const cambridgeMosque: Provider = {
     return {
       location: {
         title: 'Cambridge Central Mosque',
-        titleAr: 'مسجد كامبريدج المركزي',
         subtitle: 'Cambridge, United Kingdom',
-        subtitleAr: 'كامبريدج، المملكة المتحدة',
       },
       day: parseDay(html, date),
     };
