@@ -20,6 +20,7 @@
     if (key.startsWith('cache::mosques::') || key === 'cache::selected-mosque') localStorage.removeItem(key);
   }
 
+  $: fallback = $lastTimings?.response.fallback;
   $: source = $lastTimings?.response.source ?? { name: 'my-masjid.com', url: 'https://my-masjid.com' };
 
   $: t = getTranslator($selectedLanguage as Language);
@@ -50,6 +51,7 @@
     <a href={source.url} target="_blank" rel="noreferrer">
       {$selectedLanguage === Language.AR ? source.nameAr ?? source.name : source.name}
     </a>
+    {#if fallback}<span class="muted">({t('source-fallback')})</span>{/if}
   </span>
 </footer>
 

@@ -21,6 +21,7 @@ export default {
   'load-failed': 'تعذّر تحميل المواقيت',
   retry: 'إعادة المحاولة',
   'times-from': 'المواقيت من',
+  'source-fallback': 'موقع المسجد غير متاح',
   'no-results': 'لا توجد نتائج',
   close: 'إغلاق',
   country: 'البلد',

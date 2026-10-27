@@ -21,6 +21,7 @@ export default {
   'load-failed': 'Could not load prayer times',
   retry: 'Retry',
   'times-from': 'Times from',
+  'source-fallback': "the mosque's own site is unavailable",
   'no-results': 'No results',
   close: 'Close',
   country: 'Country',

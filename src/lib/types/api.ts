@@ -48,6 +48,8 @@ export type Source = {
 export type TimingsResponse = {
   location: Location;
   source: Source;
+  /** True when the preferred source failed and another one answered instead. */
+  fallback?: boolean;
   day: Day;
 };
 

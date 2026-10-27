@@ -20,3 +20,5 @@ export const HIJRI_MONTHS = [
   "dhul-qa'dah",
   'dhul-hijjah',
 ];
+
+export const CAMBRIDGE_CENTRAL_MOSQUE_ID = 'ae3cb3a6-066b-42fd-9684-3e10e8a3c118';

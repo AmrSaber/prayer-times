@@ -12,3 +12,5 @@ pnpm-lock.yaml
 package-lock.json
 yarn.lock
 /cache
+# Saved upstream pages, kept byte-for-byte
+fixtures
