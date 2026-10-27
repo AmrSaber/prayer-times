@@ -17,6 +17,7 @@ export default {
   change: 'change',
   to: 'to',
   clear: 'clear',
+  'remove-recent': 'Remove from recents',
   search: 'Search…',
   'load-failed': 'Could not load prayer times',
   retry: 'Retry',

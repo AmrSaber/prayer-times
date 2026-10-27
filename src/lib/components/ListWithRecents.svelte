@@ -20,6 +20,9 @@
   export let onItemSelected: (item: ListItem) => unknown;
   export let persistenceKey: string;
 
+  // Shorter lists fit on screen, so remembering a pick would not save anything
+  const RECENTS_MIN_ITEMS = 3;
+
   // Below this many items, searching adds more clutter than it saves
   const SEARCH_MIN_ITEMS = 8;
 
@@ -41,12 +44,16 @@
   $: visibleItems = items.filter((item) => !recentIds.includes(item.id) && matches(item, needle));
 
   function onSelected(selected: ListItem) {
-    if (items.length > 5) {
+    if (items.length > RECENTS_MIN_ITEMS) {
       const filteredRecents = $recents?.filter((item) => item.id != selected.id) ?? [];
       $recents = [selected, ...filteredRecents];
     }
 
     onItemSelected(selected);
+  }
+
+  function removeRecent(item: ListItem) {
+    $recents = ($recents ?? []).filter((recent) => recent.id !== item.id);
   }
 
   onMount(async () => {
@@ -69,9 +76,16 @@
 
     <ul>
       {#each visibleRecents as item (item.id)}
-        <li>
+        <li class="recent">
+          <button
+            class="not-button star"
+            title={t('remove-recent')}
+            aria-label={t('remove-recent')}
+            on:click={() => removeRecent(item)}
+          >
+            ★
+          </button>
           <button on:click={() => onSelected(item)} class="not-button row">
-            <span class="star" aria-hidden="true">★</span>
             {labelOf(item, $selectedLanguage)}
           </button>
         </li>
@@ -147,9 +161,27 @@
     background: var(--surface-hover);
   }
 
+  .recent {
+    display: flex;
+    align-items: center;
+    border-radius: 0.6rem;
+  }
+
+  .recent:hover {
+    background: var(--surface-hover);
+  }
+
   .star {
     color: var(--accent);
     font-size: 0.8em;
+    padding: 0.75rem 0.25rem 0.75rem 0.75rem;
+    border-radius: 0.6rem;
+  }
+
+  /* A star that clears the entry shows what it will do */
+  .star:hover,
+  .star:focus-visible {
+    color: var(--danger);
   }
 
   .separator {

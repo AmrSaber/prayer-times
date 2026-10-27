@@ -17,6 +17,7 @@ export default {
   change: 'تغيير',
   to: 'إلى',
   clear: 'إزالة',
+  'remove-recent': 'إزالة من الأخيرة',
   search: 'بحث…',
   'load-failed': 'تعذّر تحميل المواقيت',
   retry: 'إعادة المحاولة',
