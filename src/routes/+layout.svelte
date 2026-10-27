@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getTranslator } from '$lib/i18n';
   import { Language } from '$lib/i18n/enums';
-  import { selectedLanguage } from '$lib/stores';
+  import { lastTimings, selectedLanguage } from '$lib/stores';
   import './global.css';
 
   // Reset local storage if version doesn't match
@@ -14,6 +14,13 @@
     localStorage.setItem(versionKey, String(LOCAL_STORAGE_VERSION));
     location.reload();
   }
+
+  // Drop storage left behind by the previous client-side data layer
+  for (const key of Object.keys(localStorage)) {
+    if (key.startsWith('cache::mosques::') || key === 'cache::selected-mosque') localStorage.removeItem(key);
+  }
+
+  $: source = $lastTimings?.response.source ?? { name: 'my-masjid.com', url: 'https://my-masjid.com' };
 
   $: t = getTranslator($selectedLanguage as Language);
 
@@ -39,7 +46,8 @@
   </a>
   ・
   <span class="powered-by">
-    {t('powered-by')} <a href="https://my-masjid.com" target="_blank">my-masjid.com</a>
+    {t('times-from')}
+    <a href={source.url} target="_blank" rel="noreferrer">{source.name}</a>
   </span>
 </footer>
 

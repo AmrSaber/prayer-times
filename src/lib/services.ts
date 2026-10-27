@@ -1,25 +1,29 @@
 import memoize from 'lodash.memoize';
-import { MyMasjidApi, OwnApi } from './api';
+import throttle from 'lodash.throttle';
+import { Api } from './api';
 import type { HijriDate, HijriDateAnchor } from './types';
 import { getHijriDateFromAnchor } from './utils';
 import { LocalStorageCache } from './utils/cache';
 
-export const getCountries = memoize(MyMasjidApi.getCountries);
-export const getCities = memoize(MyMasjidApi.getCities);
-export const getMosques = memoize(MyMasjidApi.getMosques, (countryId, cityId) => `${countryId}:${cityId}`);
+export const getCountries = memoize(Api.getCountries);
+export const getCities = memoize(Api.getCities);
+export const getMosques = memoize(Api.getMosques, (countryId, cityId) => `${countryId}:${cityId}`);
 
-export const getTimings = memoize(MyMasjidApi.getTimings);
+export const getTimings = Api.getTimings;
+
+// Throttled so that calling it on every tick is safe
+const fetchHijriDate = throttle(Api.getHijriDate, 5_000);
 
 export async function getHijriDate(countryId: number): Promise<HijriDate> {
   const cacheKey = `api::hijri-date::${countryId}`;
   let cachedDate = LocalStorageCache.get<HijriDateAnchor>(cacheKey);
-  if (cachedDate?.gregorianDate == null) cachedDate = null; // TODO: remove in later version - this is here for backward compatibility
+  if (cachedDate?.gregorianDate == null) cachedDate = null;
 
   const currentDate = new Date().toISOString();
 
   let hijriDate = getHijriDateFromAnchor(cachedDate, currentDate);
   if (hijriDate != null) return hijriDate;
-  hijriDate = await OwnApi.getHijriDate(countryId)!;
+  hijriDate = (await fetchHijriDate(countryId))!;
 
   const dateAnchor: HijriDateAnchor = { hijriDate, gregorianDate: currentDate };
   LocalStorageCache.set(cacheKey, dateAnchor);

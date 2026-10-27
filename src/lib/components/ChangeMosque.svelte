@@ -2,7 +2,7 @@
   import { getTranslator } from '$lib/i18n';
   import type { Language } from '$lib/i18n/enums';
   import { getCities, getCountries, getMosques } from '$lib/services';
-  import { selectedCity, selectedCountry, selectedLanguage, selectedMosque, selectedMosqueId } from '$lib/stores';
+  import { lastTimings, selectedCity, selectedCountry, selectedLanguage, selectedMosqueId } from '$lib/stores';
   import type { ListItem } from './ListWithRecents.svelte';
   import ListWithRecents from './ListWithRecents.svelte';
   import Modal from './Modal.svelte';
@@ -33,7 +33,7 @@
     {
       mode: Mode.CHANGE_MOSQUE,
       label: t('mosque'),
-      value: $selectedMosque?.name?.split('&').at(0)?.trim(),
+      value: $selectedMosqueId != null ? $lastTimings?.response.location.title : undefined,
       enabled: $selectedCity != null,
     },
   ];
@@ -41,7 +41,7 @@
   async function loadMosques() {
     const mosques = await getMosques($selectedCountry!.id, $selectedCity!.id);
     return mosques.map((mosque) => {
-      return { id: mosque.guidId, label: mosque.name } as ListItem;
+      return { id: mosque.id, label: mosque.name } as ListItem;
     });
   }
 

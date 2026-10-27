@@ -1,13 +1,19 @@
 <script lang="ts">
-  import { onMount, tick } from 'svelte';
+  import { onMount } from 'svelte';
   import { getHijriDate, getTimings } from '$lib/services';
-  import { selectedLanguage, selectedMosque, selectedCountry, selectedMosqueId, showTimerSeconds } from '$lib/stores';
+  import {
+    lastTimings,
+    selectedCity,
+    selectedCountry,
+    selectedLanguage,
+    selectedMosqueId,
+    showTimerSeconds,
+  } from '$lib/stores';
   import { Timing, type HijriDate } from '$lib/types';
   import type { DayTimings } from '$lib/types/pure';
+  import type { Day } from '$lib/types';
   import { getFirstThirdOfNight, getLastThirdOfNight, getMidnight } from '$lib/utils';
   import { fade } from 'svelte/transition';
-  import { LocalStorageCache } from '$lib/utils/cache';
-  import type { TimingsModel } from '$lib/api';
   import { getTranslator } from '$lib/i18n';
   import type { Language } from '$lib/i18n/enums';
   import Title from '$lib/components/Title.svelte';
@@ -29,7 +35,7 @@
   const IMMINENT_MS = 5 * 60 * 1000;
 
   let isLoading = false;
-  $: timingsCacheKey = `cache::mosques::${$selectedMosqueId}::timings`;
+  let loadFailed = false;
   let showChangeMosque = false;
 
   let dayTimings: DayTimings | null = null;
@@ -43,7 +49,9 @@
 
   // Re-evaluated on every tick; everything about "next prayer" derives from it
   let now = new Date();
-  $: today = now.toDateString();
+  $: today = toIsoDate(now);
+
+  $: location = $lastTimings?.response.location;
 
   $: showHijriDate = $selectedCountry?.id === UK_ID;
   $: if (!showHijriDate) hijriDate = null;
@@ -109,76 +117,52 @@
     return timing.toSeconds() <= secondsOfDay;
   }
 
-  async function setup() {
+  async function load() {
     if ($selectedMosqueId == null) {
       showChangeMosque = true;
       isLoading = true;
       return;
     }
 
-    if ($selectedMosque?.guidId !== $selectedMosqueId) {
-      isLoading = true;
-      $selectedMosque = await getTimings($selectedMosqueId!).then((d) => d.masjidDetails);
-      isLoading = false;
-    }
+    // Show the last response straight away when it is still current, then revalidate in the background
+    const last = $lastTimings?.mosqueId === $selectedMosqueId ? $lastTimings.response : null;
+    const hasCurrentData = last?.day.date === today;
+    if (hasCurrentData) show(last!.day);
+    else isLoading = true;
 
-    if (!LocalStorageCache.has(timingsCacheKey)) {
-      isLoading = true;
-      await cacheTimings();
+    try {
+      const selection = { country: $selectedCountry!.id, city: $selectedCity!.id, mosque: $selectedMosqueId };
+      const response = await getTimings(selection, today);
+      $lastTimings = { mosqueId: $selectedMosqueId, response };
+      show(response.day);
+      loadFailed = false;
+    } catch (err) {
+      console.error(err);
+      loadFailed = !hasCurrentData;
+    } finally {
       isLoading = false;
     }
   }
 
-  async function refresh() {
-    if ($selectedMosqueId == null || !LocalStorageCache.has(timingsCacheKey)) return;
-    updateUiTimings();
-  }
-
-  function updateUiTimings() {
-    const timings = LocalStorageCache.get(timingsCacheKey) as TimingsModel;
-
-    const current = new Date();
-    const todayTiming = timings.salahTimings.find(
-      (t) => t.day == current.getDate() && t.month == current.getMonth() + 1,
-    );
-
-    if (todayTiming == null) {
-      throw new Error("could not find today's timing");
-    }
+  function show(day: Day) {
+    const pair = (p: Day['fajr']) => ({ start: new Timing(p.start), congregation: new Timing(p.congregation) });
 
     dayTimings = {
-      fajr: {
-        start: new Timing(todayTiming.fajr),
-        congregation: new Timing(todayTiming.iqamah_Fajr),
-      },
-      sunrise: new Timing(todayTiming.shouruq),
-      zuhr: {
-        start: new Timing(todayTiming.zuhr),
-        congregation: new Timing(todayTiming.iqamah_Zuhr),
-      },
-      asr: {
-        start: new Timing(todayTiming.asr),
-        congregation: new Timing(todayTiming.iqamah_Asr),
-      },
-      sunset: {
-        start: new Timing(todayTiming.maghrib),
-        congregation: new Timing(todayTiming.iqamah_Maghrib),
-      },
-      isha: {
-        start: new Timing(todayTiming.isha),
-        congregation: new Timing(todayTiming.iqamah_Isha),
-      },
+      fajr: pair(day.fajr),
+      sunrise: new Timing(day.sunrise),
+      zuhr: pair(day.zuhr),
+      asr: pair(day.asr),
+      sunset: pair(day.maghrib),
+      isha: pair(day.isha),
     };
 
-    fridayPrayerTiming = new Timing(timings.masjidSettings.jumahTime);
-    isFriday = current.getDay() == 5;
+    fridayPrayerTiming = new Timing(day.jumah);
+    isFriday = new Date(`${day.date}T12:00:00`).getDay() == 5;
   }
 
-  async function cacheTimings() {
-    if ($selectedMosqueId == null) return;
-
-    const timings = await getTimings($selectedMosqueId!);
-    if (timings != null) LocalStorageCache.set(timingsCacheKey, timings);
+  function toIsoDate(date: Date): string {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
   }
 
   async function setHijriDate() {
@@ -200,26 +184,13 @@
     $showTimerSeconds = !$showTimerSeconds;
   }
 
-  // Pick up a new day (and its timings) without a reload
-  $: if (today && !isLoading) refresh();
+  // Reload on a new day or a new location; the hijri date is refreshed on a new day too
+  $: $selectedMosqueId, today, load();
   $: if (today && showHijriDate) setHijriDate();
 
   onMount(() => {
-    // Whenever the selected mosque id changes, run setup, then show cached timings and revalidate in the background
-    const unsubscribe = selectedMosqueId.subscribe(() =>
-      setup()
-        .then(tick)
-        .then(refresh)
-        .then(cacheTimings)
-        .then(refresh)
-        .catch(() => undefined),
-    );
-
     const tickIntervalId = setInterval(() => (now = new Date()), 500);
-    return () => {
-      unsubscribe();
-      clearInterval(tickIntervalId);
-    };
+    return () => clearInterval(tickIntervalId);
   });
 
   $: t = getTranslator($selectedLanguage as Language);
@@ -238,15 +209,20 @@
     {/if}
   </Title>
 
-  {#if isLoading}
+  {#if loadFailed}
+    <section class="card failed">
+      <p>{t('load-failed')}</p>
+      <button class="pill" on:click={load}>{t('retry')}</button>
+    </section>
+  {:else if isLoading}
     <div class="skeleton" style="height: 4rem; margin-bottom: 1rem" />
     <div class="skeleton" style="height: 10rem; margin-bottom: 1rem" />
     <div class="skeleton" style="height: 16rem" />
   {:else}
     <section class="card mosque">
       <div class="mosque-info" title={t('displaying-from')}>
-        <h3>{$selectedMosque?.name.split('&').at(0)?.trim()}</h3>
-        <div class="muted small">{$selectedMosque?.city}, {$selectedMosque?.country}</div>
+        <h3>{location?.title}</h3>
+        <div class="muted small">{location?.subtitle}</div>
       </div>
       <button class="pill" on:click={() => (showChangeMosque = true)}>{t('change')}</button>
     </section>
@@ -348,6 +324,11 @@
   .hijri {
     margin: 0.15rem 0 0;
     font-size: 0.85rem;
+  }
+
+  .failed {
+    padding: 1.5rem;
+    text-align: center;
   }
 
   .mosque {

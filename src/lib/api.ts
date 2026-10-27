@@ -1,76 +1,22 @@
-import throttle from 'lodash.throttle';
-import type { HijriDate } from './types';
-import type {
-  City,
-  Country,
-  IqamahTimings,
-  JumahSalahIqamahTiming,
-  MasjidSettings,
-  Mosque,
-  MosqueDetails,
-  SalahTiming,
-} from './types/pure';
+import type { HijriDate, MosqueOption, Selection, TimingsResponse } from './types';
+import type { City, Country } from './types/pure';
 
-const MY_MASJID_BASE_URL = 'https://time.my-masjid.com/api';
+export const Api = {
+  getCountries: () => get<Country[]>('/api/countries'),
 
-// Not currently used, but here for reference
-export type Response<T> = {
-  error: string;
-  hasError: boolean;
-  message: string;
-  model: T;
+  getCities: (countryId: number) => get<City[]>(`/api/cities?country=${countryId}`),
+
+  getMosques: (countryId: number, cityId: number) =>
+    get<MosqueOption[]>(`/api/mosques?country=${countryId}&city=${cityId}`),
+
+  getTimings: ({ country, city, mosque }: Required<Selection>, date: string) =>
+    get<TimingsResponse>(`/api/timings?country=${country}&city=${city}&mosque=${mosque}&date=${date}`),
+
+  getHijriDate: (countryId: number) => get<HijriDate>(`/api/hijri-date/${countryId}`),
 };
 
-export type TimingsModel = {
-  masjidDetails: MosqueDetails;
-  masjidSettings: MasjidSettings;
-  salahTimings: SalahTiming[];
-  iqamahTimings: IqamahTimings;
-  jumahSalahIqamahTimings: JumahSalahIqamahTiming[];
-  lastUpdatedAt: string;
-};
-
-export const MyMasjidApi = {
-  async getCountries(): Promise<Country[]> {
-    const response = await fetch(`${MY_MASJID_BASE_URL}/Country/GetAllCountries`, {
-      headers: { 'Content-Type': 'application/json' },
-    });
-
-    return await response.json().then((d) => d.model as Country[]);
-  },
-
-  async getCities(countryId: number): Promise<City[]> {
-    const response = await fetch(`${MY_MASJID_BASE_URL}/City/GetCitiesByCountryId?CountryId=${countryId}`, {
-      headers: { 'Content-Type': 'application/json' },
-    });
-
-    return await response.json().then((d) => d.model as City[]);
-  },
-
-  async getMosques(countryId: number, cityId: number): Promise<Mosque[]> {
-    const response = await fetch(
-      `${MY_MASJID_BASE_URL}/Masjid/SearchMasjidByLocation?CountryId=${countryId}&CityId=${cityId}`,
-      { headers: { 'Content-Type': 'application/json' } },
-    );
-
-    return await response.json().then((d) => d.model as Mosque[]);
-  },
-
-  async getTimings(mosqueId: string): Promise<TimingsModel> {
-    const response = await fetch(`${MY_MASJID_BASE_URL}/TimingsInfoScreen/GetMasjidTimings?GuidId=${mosqueId}`, {
-      headers: { 'Content-Type': 'application/json' },
-    });
-
-    return await response.json().then((d) => d.model);
-  },
-};
-
-export const OwnApi = {
-  getHijriDate: throttle(async function (countryId: number): Promise<HijriDate> {
-    const response = await fetch(`/api/hijri-date/${countryId}`);
-    const body = await response.json();
-
-    if (response.status > 200) throw new Error(body.error);
-    return body;
-  }, 5_000),
-};
+async function get<T>(path: string): Promise<T> {
+  const response = await fetch(path);
+  if (!response.ok) throw new Error(`${path} responded ${response.status}`);
+  return response.json();
+}

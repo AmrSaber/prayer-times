@@ -1,7 +1,6 @@
 export default {
   title: 'مواقيت الصلاة',
   'change-language': 'En',
-  'powered-by': 'المواقيت من',
 
   'displaying-from': 'المواقيت وفقاً لـ',
 
@@ -19,6 +18,9 @@ export default {
   to: 'إلى',
   clear: 'إزالة',
   search: 'بحث…',
+  'load-failed': 'تعذّر تحميل المواقيت',
+  retry: 'إعادة المحاولة',
+  'times-from': 'المواقيت من',
   'no-results': 'لا توجد نتائج',
   close: 'إغلاق',
   country: 'البلد',

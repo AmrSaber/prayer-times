@@ -1,7 +1,6 @@
 export default {
   title: 'Prayer Times',
   'change-language': 'عربي',
-  'powered-by': 'Powered by',
 
   'displaying-from': 'Displaying prayer times from',
 
@@ -19,6 +18,9 @@ export default {
   to: 'to',
   clear: 'clear',
   search: 'Search…',
+  'load-failed': 'Could not load prayer times',
+  retry: 'Retry',
+  'times-from': 'Times from',
   'no-results': 'No results',
   close: 'Close',
   country: 'Country',
