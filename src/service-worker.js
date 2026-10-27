@@ -13,8 +13,8 @@ const ASSETS = [
 ];
 
 const EXCLUDED_CACHE_PATHS = [
-  // Never cache time request, its caching is handled inside the app
-  'TimingsInfoScreen/GetMasjidTimings',
+  // Data is cached by the server and the app, so a stale copy here would only hide updates
+  '/api/',
   'manifest.json',
 ];
 
