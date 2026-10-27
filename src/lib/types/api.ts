@@ -29,16 +29,19 @@ export type Day = {
 export type Selection = {
   country: number;
   city: number;
-  mosque?: string;
+  mosque?: string | null;
 };
 
 export type Location = {
   title: string;
   subtitle: string;
+  titleAr?: string;
+  subtitleAr?: string;
 };
 
 export type Source = {
   name: string;
+  nameAr?: string;
   url: string;
 };
 

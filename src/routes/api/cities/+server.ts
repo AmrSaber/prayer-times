@@ -1,5 +1,5 @@
 import { ID, param, respond } from '$lib/server/http';
-import { getCities } from '$lib/server/providers/my-masjid';
+import { getCities } from '$lib/server/providers';
 
 export const GET = ({ url }) => {
   const country = Number(param(url, 'country', ID));

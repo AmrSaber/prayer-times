@@ -1,7 +1,9 @@
 export const UK_ID = 53;
+export const EGYPT_ID = 10090;
 export const CAMBRIDGE_ID = 20245;
 
 export const UK_TIME_ZONE = 'Europe/London';
+export const EGYPT_TIME_ZONE = 'Africa/Cairo';
 
 // In order
 export const HIJRI_MONTHS = [

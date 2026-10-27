@@ -9,8 +9,10 @@ export const Api = {
   getMosques: (countryId: number, cityId: number) =>
     get<MosqueOption[]>(`/api/mosques?country=${countryId}&city=${cityId}`),
 
-  getTimings: ({ country, city, mosque }: Required<Selection>, date: string) =>
-    get<TimingsResponse>(`/api/timings?country=${country}&city=${city}&mosque=${mosque}&date=${date}`),
+  getTimings: ({ country, city, mosque }: Selection, date: string) =>
+    get<TimingsResponse>(
+      `/api/timings?country=${country}&city=${city}${mosque ? `&mosque=${mosque}` : ''}&date=${date}`,
+    ),
 
   getHijriDate: (countryId: number) => get<HijriDate>(`/api/hijri-date/${countryId}`),
 };

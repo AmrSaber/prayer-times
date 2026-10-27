@@ -7,6 +7,7 @@
     selectedCountry,
     selectedLanguage,
     selectedMosqueId,
+    selectionKey,
     showTimerSeconds,
   } from '$lib/stores';
   import { Timing, type HijriDate } from '$lib/types';
@@ -17,7 +18,7 @@
   import { getTranslator } from '$lib/i18n';
   import type { Language } from '$lib/i18n/enums';
   import Title from '$lib/components/Title.svelte';
-  import { UK_ID } from '$lib/constants';
+  import { EGYPT_ID, UK_ID } from '$lib/constants';
   import ChangeMosque from '$lib/components/ChangeMosque.svelte';
 
   type PrayerKey = 'fajr' | 'zuhr' | 'asr' | 'maghrib' | 'isha';
@@ -53,7 +54,12 @@
 
   $: location = $lastTimings?.response.location;
 
-  $: showHijriDate = $selectedCountry?.id === UK_ID;
+  const HIJRI_AUTHORITIES: Record<number, string> = {
+    [UK_ID]: 'https://moonsighting.org.uk',
+    [EGYPT_ID]: 'https://www.dar-alifta.org',
+  };
+  $: hijriAuthority = HIJRI_AUTHORITIES[$selectedCountry?.id ?? -1];
+  $: showHijriDate = hijriAuthority != null;
   $: if (!showHijriDate) hijriDate = null;
 
   // Everything that counts down: the five prayers, sunrise and (on Fridays) Jummah
@@ -65,8 +71,12 @@
   $: countdown = formatDuration(msToNext, $showTimerSeconds ?? true);
 
   // Iqamah is tracked separately: it can still be ahead after its azan has passed
+  $: hasIqamah = dayTimings != null && PRAYERS.some((p) => p.get(dayTimings!).congregation != null);
   $: nextIqamah = PRAYERS.filter((p) => !(p.key === 'zuhr' && isFriday))
-    .map((p) => ({ key: p.key, ms: dayTimings ? msUntil(p.get(dayTimings).congregation, now) : Infinity }))
+    .map((p) => {
+      const congregation = dayTimings ? p.get(dayTimings).congregation : undefined;
+      return { key: p.key, ms: congregation ? msUntil(congregation, now) : Infinity };
+    })
     .sort((a, b) => a.ms - b.ms)
     .at(0)?.key;
 
@@ -118,14 +128,15 @@
   }
 
   async function load() {
-    if ($selectedMosqueId == null) {
+    const key = $selectionKey;
+    if (key == null) {
       showChangeMosque = true;
       isLoading = true;
       return;
     }
 
     // Show the last response straight away when it is still current, then revalidate in the background
-    const last = $lastTimings?.mosqueId === $selectedMosqueId ? $lastTimings.response : null;
+    const last = $lastTimings?.key === key ? $lastTimings.response : null;
     const hasCurrentData = last?.day.date === today;
     if (hasCurrentData) show(last!.day);
     else isLoading = true;
@@ -133,7 +144,8 @@
     try {
       const selection = { country: $selectedCountry!.id, city: $selectedCity!.id, mosque: $selectedMosqueId };
       const response = await getTimings(selection, today);
-      $lastTimings = { mosqueId: $selectedMosqueId, response };
+      if (key !== $selectionKey) return; // the selection changed while loading
+      $lastTimings = { key, response };
       show(response.day);
       loadFailed = false;
     } catch (err) {
@@ -145,7 +157,10 @@
   }
 
   function show(day: Day) {
-    const pair = (p: Day['fajr']) => ({ start: new Timing(p.start), congregation: new Timing(p.congregation) });
+    const pair = (p: Day['fajr']) => ({
+      start: new Timing(p.start),
+      congregation: p.congregation ? new Timing(p.congregation) : undefined,
+    });
 
     dayTimings = {
       fajr: pair(day.fajr),
@@ -156,7 +171,7 @@
       isha: pair(day.isha),
     };
 
-    fridayPrayerTiming = new Timing(day.jumah);
+    fridayPrayerTiming = day.jumah ? new Timing(day.jumah) : undefined;
     isFriday = new Date(`${day.date}T12:00:00`).getDay() == 5;
   }
 
@@ -165,17 +180,18 @@
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
   }
 
-  async function setHijriDate() {
+  async function setHijriDate(countryId: number) {
     try {
       // The service is throttled so calling it continuously is safe
-      hijriDate = await getHijriDate($selectedCountry!.id);
+      const date = await getHijriDate(countryId);
+      if (countryId === $selectedCountry?.id) hijriDate = date;
     } catch {
       hijriDate = null;
     }
   }
 
   function closeChangeMosque() {
-    if ($selectedMosqueId != null) {
+    if ($selectionKey != null) {
       showChangeMosque = false;
     }
   }
@@ -185,8 +201,10 @@
   }
 
   // Reload on a new day or a new location; the hijri date is refreshed on a new day too
-  $: $selectedMosqueId, today, load();
-  $: if (today && showHijriDate) setHijriDate();
+  $: $selectionKey, today, load();
+  // Each country follows its own authority, so a country change must drop the previous date
+  $: if ($selectedCountry?.id) hijriDate = null;
+  $: if (today && showHijriDate && $selectedCountry) setHijriDate($selectedCountry.id);
 
   onMount(() => {
     const tickIntervalId = setInterval(() => (now = new Date()), 500);
@@ -204,7 +222,7 @@
         {hijriDate.day}
         {t(hijriDate.month)}
         {hijriDate.year}
-        <a href="https://moonsighting.org.uk" target="_blank" rel="noreferrer" aria-label="moonsighting.org.uk">*</a>
+        <a href={hijriAuthority} target="_blank" rel="noreferrer" aria-label={hijriAuthority}>*</a>
       </p>
     {/if}
   </Title>
@@ -221,8 +239,10 @@
   {:else}
     <section class="card mosque">
       <div class="mosque-info" title={t('displaying-from')}>
-        <h3>{location?.title}</h3>
-        <div class="muted small">{location?.subtitle}</div>
+        <h3>{$selectedLanguage === 'ar' ? location?.titleAr ?? location?.title : location?.title}</h3>
+        <div class="muted small">
+          {$selectedLanguage === 'ar' ? location?.subtitleAr ?? location?.subtitle : location?.subtitle}
+        </div>
       </div>
       <button class="pill" on:click={() => (showChangeMosque = true)}>{t('change')}</button>
     </section>
@@ -250,11 +270,11 @@
       </div>
     </section>
 
-    <section class="card prayers">
+    <section class="card prayers" style="--time-columns: {hasIqamah ? 2 : 1}">
       <div class="row head muted small">
         <span />
         <span>{t('azan')}</span>
-        <span>{t('iqamah')}</span>
+        {#if hasIqamah}<span>{t('iqamah')}</span>{/if}
       </div>
 
       {#each PRAYERS as prayer (prayer.key)}
@@ -266,9 +286,11 @@
         >
           <span class="label">{t(prayer.key)}</span>
           <span class="time">{timing?.start.format()}</span>
-          <span class="time" class:accent={nextIqamah === prayer.key}>
-            {prayer.key === 'zuhr' && isFriday ? '-' : timing?.congregation.format()}
-          </span>
+          {#if hasIqamah}
+            <span class="time" class:accent={nextIqamah === prayer.key}>
+              {prayer.key === 'zuhr' && isFriday ? '-' : timing?.congregation?.format() ?? '-'}
+            </span>
+          {/if}
         </div>
       {/each}
     </section>
@@ -279,7 +301,7 @@
         <span class="time">{dayTimings?.sunrise.format()}</span>
       </div>
 
-      {#if isFriday}
+      {#if isFriday && fridayPrayerTiming}
         <div class="other" class:accent={next?.key === 'friday-prayer'}>
           <span>{t('friday-prayer')}</span>
           <span class="time">{fridayPrayerTiming?.format()}</span>
@@ -332,21 +354,22 @@
   }
 
   .mosque {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    padding: 0.6rem 0.9rem;
+    position: relative;
+    text-align: center;
+    /* Reserve room for the button on both sides so the text stays centred */
+    padding: 0.6rem 5rem;
   }
 
   .mosque h3 {
     margin: 0;
     font-size: 1rem;
-    direction: ltr;
-    text-align: start;
   }
 
   .mosque .pill {
+    position: absolute;
+    inset-inline-end: 0.9rem;
+    top: 50%;
+    transform: translateY(-50%);
     padding: 0.3rem 0.75rem;
     font-size: 0.85rem;
   }
@@ -419,7 +442,7 @@
 
   .row {
     display: grid;
-    grid-template-columns: 1fr 4.5rem 4.5rem;
+    grid-template-columns: 1fr repeat(var(--time-columns, 2), 4.5rem);
     align-items: center;
     padding: 0.5rem 0.75rem;
     border-radius: 0.6rem;

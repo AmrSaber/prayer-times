@@ -47,7 +47,9 @@
   ・
   <span class="powered-by">
     {t('times-from')}
-    <a href={source.url} target="_blank" rel="noreferrer">{source.name}</a>
+    <a href={source.url} target="_blank" rel="noreferrer">
+      {$selectedLanguage === Language.AR ? source.nameAr ?? source.name : source.name}
+    </a>
   </span>
 </footer>
 

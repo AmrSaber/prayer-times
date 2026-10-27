@@ -1,6 +1,8 @@
 <script lang="ts" context="module">
   export interface ListItem {
     label: string;
+    labelAr?: string;
+    complete?: boolean;
     id: string | number;
   }
 </script>
@@ -31,7 +33,10 @@
   let query = '';
 
   $: needle = query.trim().toLowerCase();
-  const matches = (item: ListItem, needle: string) => item.label.toLowerCase().includes(needle);
+  const matches = (item: ListItem, needle: string) =>
+    `${item.label} ${item.labelAr ?? ''}`.toLowerCase().includes(needle);
+  const labelOf = (item: ListItem, language: string | null | undefined) =>
+    language === 'ar' && item.labelAr ? item.labelAr : item.label;
   $: visibleRecents = ($recents ?? []).filter((item) => matches(item, needle));
   $: visibleItems = items.filter((item) => !recentIds.includes(item.id) && matches(item, needle));
 
@@ -59,13 +64,7 @@
     <div class="title muted">{title}</div>
 
     {#if items.length > SEARCH_MIN_ITEMS}
-      <input
-        class="search"
-        type="search"
-        placeholder={t('search')}
-        aria-label={t('search')}
-        bind:value={query}
-      />
+      <input class="search" type="search" placeholder={t('search')} aria-label={t('search')} bind:value={query} />
     {/if}
 
     <ul>
@@ -73,7 +72,7 @@
         <li>
           <button on:click={() => onSelected(item)} class="not-button row">
             <span class="star" aria-hidden="true">★</span>
-            {item.label}
+            {labelOf(item, $selectedLanguage)}
           </button>
         </li>
       {/each}
@@ -90,7 +89,7 @@
       {#each visibleItems as item (item.id)}
         <li>
           <button on:click={() => onSelected(item)} class="not-button row">
-            {item.label}
+            {labelOf(item, $selectedLanguage)}
           </button>
         </li>
       {/each}

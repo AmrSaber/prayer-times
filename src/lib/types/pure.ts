@@ -8,6 +8,9 @@ export type Country = {
 export type City = {
   id: number;
   name: string;
+  nameAr?: string;
+  /** Picking this city completes the selection, so there is no mosque to choose. */
+  complete?: boolean;
 };
 
 export type Mosque = {
@@ -23,7 +26,7 @@ export type Mosque = {
 
 export type PrayerTiming = {
   start: Timing;
-  congregation: Timing;
+  congregation?: Timing;
 };
 
 export type DayTimings = {

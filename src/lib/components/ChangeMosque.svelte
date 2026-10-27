@@ -2,7 +2,14 @@
   import { getTranslator } from '$lib/i18n';
   import type { Language } from '$lib/i18n/enums';
   import { getCities, getCountries, getMosques } from '$lib/services';
-  import { lastTimings, selectedCity, selectedCountry, selectedLanguage, selectedMosqueId } from '$lib/stores';
+  import {
+    lastTimings,
+    selectedCity,
+    selectedCountry,
+    selectedLanguage,
+    selectedMosqueId,
+    selectionKey,
+  } from '$lib/stores';
   import type { ListItem } from './ListWithRecents.svelte';
   import ListWithRecents from './ListWithRecents.svelte';
   import Modal from './Modal.svelte';
@@ -27,15 +34,28 @@
     mode = Mode.CHANGE_CITY;
   }
 
+  const cityName = (city: { name: string; nameAr?: string } | null | undefined, language: string | null | undefined) =>
+    language === 'ar' && city?.nameAr ? city.nameAr : city?.name;
+
+  // Some providers list only cities, so there is no mosque step for them
   $: steps = [
     { mode: Mode.CHANGE_COUNTRY, label: t('country'), value: $selectedCountry?.name, enabled: true },
-    { mode: Mode.CHANGE_CITY, label: t('city'), value: $selectedCity?.name, enabled: $selectedCountry != null },
     {
-      mode: Mode.CHANGE_MOSQUE,
-      label: t('mosque'),
-      value: $selectedMosqueId != null ? $lastTimings?.response.location.title : undefined,
-      enabled: $selectedCity != null,
+      mode: Mode.CHANGE_CITY,
+      label: t('city'),
+      value: cityName($selectedCity, $selectedLanguage),
+      enabled: $selectedCountry != null,
     },
+    ...($selectedCity?.complete
+      ? []
+      : [
+          {
+            mode: Mode.CHANGE_MOSQUE,
+            label: t('mosque'),
+            value: $selectedMosqueId != null ? $lastTimings?.response.location.title : undefined,
+            enabled: $selectedCity != null,
+          },
+        ]),
   ];
 
   async function loadMosques() {
@@ -52,18 +72,17 @@
 
   async function loadCities() {
     const cities = await getCities($selectedCountry!.id);
-    return cities.map((city) => {
-      return { id: city.id, label: city.name } as ListItem;
-    });
+    return cities.map((city) => ({ id: city.id, label: city.name, labelAr: city.nameAr, complete: city.complete }));
   }
 
   function selectCity(item: ListItem) {
     if (item.id != $selectedCity?.id) {
-      $selectedCity = { id: item.id as number, name: item.label };
+      $selectedCity = { id: item.id as number, name: item.label, nameAr: item.labelAr, complete: item.complete };
       $selectedMosqueId = null;
     }
 
-    changeMode(Mode.CHANGE_MOSQUE);
+    if (item.complete) onClose();
+    else changeMode(Mode.CHANGE_MOSQUE);
   }
 
   async function loadCountries() {
@@ -106,7 +125,7 @@
       {/each}
     </nav>
 
-    {#if $selectedMosqueId != null}
+    {#if $selectionKey != null}
       <button class="not-button close" aria-label={t('close')} on:click={onClose}>✕</button>
     {/if}
   </div>

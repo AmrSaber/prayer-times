@@ -91,7 +91,7 @@ export class Timing {
         seconds = 0;
 
         // Normalize hours/minutes after minutes update
-        hours += Math.floor(minutes / 60);
+        hours = (hours + Math.floor(minutes / 60)) % 24;
         minutes %= 60;
       }
 
