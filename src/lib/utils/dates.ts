@@ -1,4 +1,4 @@
-import { HIJRI_MONTHS } from '$lib/constants';
+import { HIJRI_MONTHS, UK_TIME_ZONE } from '$lib/constants';
 import type { HijriDate, HijriDateAnchor, Nullable } from '$lib/types';
 import { DateTime, Interval } from 'luxon';
 import { assert } from './polyfills';
@@ -59,4 +59,23 @@ export function getHijriDateFromAnchor(
 
   if (daysDiff == 0 || hijriDate.day < 30) return hijriDate;
   return null;
+}
+
+/** The device-local date (`YYYY-MM-DD`) at `at`, now by default. */
+export function localToday(at: Date = new Date()): string {
+  return DateTime.fromJSDate(at).toISODate()!;
+}
+
+// FIXME: every server daily-reset check uses London time; use the time zone of the selected location instead.
+/** The date (`YYYY-MM-DD`) in London at `at`, now by default. */
+export function londonToday(at: Date = new Date()): string {
+  return DateTime.fromJSDate(at).setZone(UK_TIME_ZONE).toISODate()!;
+}
+
+/** Milliseconds until the next London wall-clock `hour:minute`. */
+export function msUntilLondon(hour: number, minute: number, now = DateTime.now()): number {
+  const local = now.setZone(UK_TIME_ZONE);
+  let target = local.set({ hour, minute, second: 0, millisecond: 0 });
+  if (target <= local) target = target.plus({ days: 1 });
+  return target.toMillis() - local.toMillis();
 }

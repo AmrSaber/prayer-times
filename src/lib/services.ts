@@ -1,15 +1,18 @@
-import memoize from 'lodash.memoize';
 import throttle from 'lodash.throttle';
 import { Api } from './api';
-import type { HijriDate, HijriDateAnchor } from './types';
+import type { HijriDate, HijriDateAnchor, Selection } from './types';
 import { getHijriDateFromAnchor } from './utils';
-import { LocalStorageCache } from './utils/cache';
+import { cachedToday, LocalStorageCache } from './utils/cache';
 
-export const getCountries = memoize(Api.getCountries);
-export const getCities = memoize(Api.getCities);
-export const getMosques = memoize(Api.getMosques, (countryId, cityId) => `${countryId}:${cityId}`);
-
-export const getTimings = Api.getTimings;
+// Kept in local storage for the rest of the day so anything already viewed still works offline
+export const getCountries = () => cachedToday('countries', Api.getCountries);
+export const getCities = (countryId: number) => cachedToday(`cities::${countryId}`, () => Api.getCities(countryId));
+export const getMosques = (countryId: number, cityId: number) =>
+  cachedToday(`mosques::${countryId}::${cityId}`, () => Api.getMosques(countryId, cityId));
+export const getTimings = (selection: Selection, date: string) =>
+  cachedToday(`timings::${selection.country}::${selection.city}::${selection.mosque ?? ''}::${date}`, () =>
+    Api.getTimings(selection, date),
+  );
 
 // Throttled so that calling it on every tick is safe
 const fetchHijriDate = throttle(Api.getHijriDate, 5_000);

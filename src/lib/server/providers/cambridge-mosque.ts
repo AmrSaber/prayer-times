@@ -5,7 +5,6 @@ import * as cheerio from 'cheerio';
 import type { Provider } from './types';
 
 const PAGE_URL = 'https://cambridgecentralmosque.org/prayer-times';
-const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
 
 // The mosque publishes its own timetable, which often differs from the one on my-masjid.
 export const cambridgeMosque: Provider = {
@@ -14,12 +13,15 @@ export const cambridgeMosque: Provider = {
 
   matches: (selection: Selection) => selection.mosque === CAMBRIDGE_CENTRAL_MOSQUE_ID,
 
+  prefetch: true,
+
+  // The cache expires at midnight, so this finds it empty and loads the new day.
+  async refresh(date: string) {
+    await fetchPage(date);
+  },
+
   async getTimings(_selection: Selection, date: string) {
-    const html = await cached(`cambridge-mosque::${date}`, SIX_HOURS_MS, async () => {
-      const response = await fetch(PAGE_URL, { signal: AbortSignal.timeout(10_000) });
-      if (!response.ok) throw new Error(`cambridge-mosque responded ${response.status}`);
-      return response.text();
-    });
+    const html = await fetchPage(date);
 
     return {
       location: {
@@ -30,6 +32,14 @@ export const cambridgeMosque: Provider = {
     };
   },
 };
+
+function fetchPage(date: string): Promise<string> {
+  return cached(`cambridge-mosque::${date}`, async () => {
+    const response = await fetch(PAGE_URL, { signal: AbortSignal.timeout(10_000) });
+    if (!response.ok) throw new Error(`cambridge-mosque responded ${response.status}`);
+    return response.text();
+  });
+}
 
 /** Pick `date` (`YYYY-MM-DD`) out of the page, which lists today and the days after it. Throws when it is missing. */
 export function parseDay(html: string, date: string): Day {

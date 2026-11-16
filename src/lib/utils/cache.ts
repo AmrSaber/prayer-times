@@ -1,4 +1,5 @@
 import type { Nullable } from '$lib/types';
+import { localToday } from './dates';
 
 export type CachedMeta = { expiresAt?: number };
 
@@ -67,3 +68,26 @@ export const InMemoryCache: Cache = {
     return this.get(key) != null;
   },
 };
+
+const DAILY_PREFIX = 'cache::';
+const DAILY_KEY = /^cache::(\d{4}-\d{2}-\d{2})::/;
+
+/** Return today's stored value for `key`, or load and store it. A failed load throws, even if older data exists. */
+export async function cachedToday<T>(key: string, load: () => Promise<T>): Promise<T> {
+  const storageKey = `${DAILY_PREFIX}${localToday()}::${key}`;
+
+  const hit = LocalStorageCache.get<{ value: T }>(storageKey);
+  if (hit != null) return hit.value;
+
+  const value = await load();
+  LocalStorageCache.set(storageKey, { value });
+  return value;
+}
+
+/** Delete the daily entries of earlier days so they don't pile up in the browser. */
+export function purgeStaleDaily(today = localToday()) {
+  for (const key of Object.keys(localStorage)) {
+    const date = DAILY_KEY.exec(key)?.[1];
+    if (date != null && date !== today) localStorage.removeItem(key);
+  }
+}

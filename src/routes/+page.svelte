@@ -13,7 +13,7 @@
   import { Timing, type HijriDate } from '$lib/types';
   import type { DayTimings } from '$lib/types/pure';
   import type { Day } from '$lib/types';
-  import { getFirstThirdOfNight, getLastThirdOfNight, getMidnight } from '$lib/utils';
+  import { getFirstThirdOfNight, getLastThirdOfNight, getMidnight, localToday } from '$lib/utils';
   import { fade } from 'svelte/transition';
   import { getTranslator } from '$lib/i18n';
   import type { Language } from '$lib/i18n/enums';
@@ -50,7 +50,7 @@
 
   // Re-evaluated on every tick; everything about "next prayer" derives from it
   let now = new Date();
-  $: today = toIsoDate(now);
+  $: today = localToday(now);
 
   $: location = $lastTimings?.response.location;
 
@@ -173,11 +173,6 @@
 
     fridayPrayerTiming = day.jumah ? new Timing(day.jumah) : undefined;
     isFriday = new Date(`${day.date}T12:00:00`).getDay() == 5;
-  }
-
-  function toIsoDate(date: Date): string {
-    const pad = (n: number) => String(n).padStart(2, '0');
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
   }
 
   async function setHijriDate(countryId: number) {

@@ -14,9 +14,6 @@ import type { Provider } from './types';
 
 const BASE_URL = 'https://time.my-masjid.com/api';
 
-const HOUR_MS = 60 * 60 * 1000;
-const DAY_MS = 24 * HOUR_MS;
-
 export type TimingsModel = {
   masjidDetails: MosqueDetails;
   masjidSettings: MasjidSettings;
@@ -36,7 +33,7 @@ export const myMasjid: Provider = {
   async getTimings(selection: Selection, date: string) {
     if (selection.mosque == null) throw new Error('mosque is required');
 
-    const model = await cached(`my-masjid::timings::${selection.mosque}`, HOUR_MS, () =>
+    const model = await cached(`my-masjid::timings::${selection.mosque}`, () =>
       get<TimingsModel>(`TimingsInfoScreen/GetMasjidTimings?GuidId=${encodeURIComponent(selection.mosque!)}`),
     );
 
@@ -45,17 +42,17 @@ export const myMasjid: Provider = {
 };
 
 export function getCountries(): Promise<Country[]> {
-  return cached('my-masjid::countries', DAY_MS, () => get<Country[]>('Country/GetAllCountries'));
+  return cached('my-masjid::countries', () => get<Country[]>('Country/GetAllCountries'));
 }
 
 export function getCities(countryId: number): Promise<City[]> {
-  return cached(`my-masjid::cities::${countryId}`, DAY_MS, () =>
+  return cached(`my-masjid::cities::${countryId}`, () =>
     get<City[]>(`City/GetCitiesByCountryId?CountryId=${countryId}`),
   );
 }
 
 export function getMosques(countryId: number, cityId: number): Promise<MosqueOption[]> {
-  return cached(`my-masjid::mosques::${countryId}::${cityId}`, HOUR_MS, async () => {
+  return cached(`my-masjid::mosques::${countryId}::${cityId}`, async () => {
     const mosques = await get<Mosque[]>(`Masjid/SearchMasjidByLocation?CountryId=${countryId}&CityId=${cityId}`);
     return mosques.map((mosque) => ({ id: mosque.guidId, name: mosque.name }));
   });

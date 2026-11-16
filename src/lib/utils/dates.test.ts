@@ -1,6 +1,7 @@
 import type { HijriDateAnchor } from '$lib/types';
 import { describe, expect, test } from 'bun:test';
-import { getHijriDateFromAnchor, getHijriMonthFromNumber as getMonth } from './dates';
+import { DateTime } from 'luxon';
+import { getHijriDateFromAnchor, getHijriMonthFromNumber as getMonth, londonToday, msUntilLondon } from './dates';
 
 describe('Dates utils tests', () => {
   describe('getHijriDateFromAnchor', () => {
@@ -132,5 +133,25 @@ describe('Dates utils tests', () => {
         expect(hijriDate).toEqual({ day: 14, month: getMonth(0), year: anchor.hijriDate.year + 1 });
       });
     });
+  });
+});
+
+describe('London time helpers', () => {
+  const at = (iso: string) => DateTime.fromISO(iso, { zone: 'utc' }) as DateTime<true>;
+
+  test('londonToday follows London, not UTC', () => {
+    expect(londonToday(new Date('2026-07-01T23:30:00Z'))).toBe('2026-07-02'); // BST is UTC+1
+    expect(londonToday(new Date('2026-12-01T23:30:00Z'))).toBe('2026-12-01');
+  });
+
+  test('msUntilLondon rolls over to the next day', () => {
+    expect(msUntilLondon(0, 5, at('2026-12-01T00:00:00Z'))).toBe(5 * 60 * 1000);
+    expect(msUntilLondon(0, 5, at('2026-12-01T00:05:00Z'))).toBe(24 * 60 * 60 * 1000);
+    expect(msUntilLondon(0, 0, at('2026-12-01T23:00:00Z'))).toBe(60 * 60 * 1000);
+  });
+
+  test('msUntilLondon handles the clock change', () => {
+    // 2026-03-29 has only 23 hours in London
+    expect(msUntilLondon(0, 0, at('2026-03-29T00:00:00Z'))).toBe(23 * 60 * 60 * 1000);
   });
 });

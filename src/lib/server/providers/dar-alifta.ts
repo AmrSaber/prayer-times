@@ -6,7 +6,6 @@ import { DAR_ALIFTA_CITIES } from './dar-alifta-cities';
 import type { Provider } from './types';
 
 const BASE_URL = 'https://www.dar-alifta.org/ar/Prayer/GetPrayer';
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 // Dar al-Ifta serves one page per city holding the whole month, prints no iqamah and has no Jumuah time.
 export const darAlifta: Provider = {
@@ -38,7 +37,7 @@ export async function getDarAliftaHijriDate(date: string): Promise<HijriDate> {
 
 // The page is cached per city and date so the Hijri date it prints is never stale.
 function fetchPage(city: string, date: string): Promise<string> {
-  return cached(`dar-alifta::${city}::${date}`, DAY_MS, async () => {
+  return cached(`dar-alifta::${city}::${date}`, async () => {
     const response = await fetch(`${BASE_URL}?town=${encodeURIComponent(city)}`, {
       signal: AbortSignal.timeout(10_000),
     });

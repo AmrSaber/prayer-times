@@ -2,6 +2,7 @@
   import { getTranslator } from '$lib/i18n';
   import { Language } from '$lib/i18n/enums';
   import { lastTimings, selectedLanguage } from '$lib/stores';
+  import { purgeStaleDaily } from '$lib/utils/cache';
   import './global.css';
 
   // Reset local storage if version doesn't match
@@ -19,6 +20,8 @@
   for (const key of Object.keys(localStorage)) {
     if (key.startsWith('cache::mosques::') || key === 'cache::selected-mosque') localStorage.removeItem(key);
   }
+
+  purgeStaleDaily();
 
   $: fallback = $lastTimings?.response.fallback;
   $: source = $lastTimings?.response.source ?? { name: 'my-masjid.com', url: 'https://my-masjid.com' };
