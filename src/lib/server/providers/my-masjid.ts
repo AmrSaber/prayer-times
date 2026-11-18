@@ -1,5 +1,5 @@
-import { cached } from '$lib/server/cache';
-import type { Day, Location, MosqueOption, Selection } from '$lib/types';
+import { cached } from '#lib/server/cache/index.ts';
+import type { Day, Location, MosqueOption, Selection } from '#lib/types/index.ts';
 import type {
   City,
   Country,
@@ -9,7 +9,7 @@ import type {
   Mosque,
   MosqueDetails,
   SalahTiming,
-} from '$lib/types/pure';
+} from '#lib/types/pure.ts';
 import type { Provider } from './types';
 
 const BASE_URL = 'https://time.my-masjid.com/api';

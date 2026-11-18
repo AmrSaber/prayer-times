@@ -1,5 +1,5 @@
-import { EGYPT_ID, EGYPT_TIME_ZONE, UK_ID, UK_TIME_ZONE } from '$lib/constants';
-import type { HijriDate } from '$lib/types';
+import { EGYPT_ID, EGYPT_TIME_ZONE, UK_ID, UK_TIME_ZONE } from '#lib/constants.ts';
+import type { HijriDate } from '#lib/types/index.ts';
 import * as cheerio from 'cheerio';
 import { DateTime } from 'luxon';
 import { getDarAliftaHijriDate } from './providers/dar-alifta';

@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
   export interface ListItem {
     label: string;
     labelAr?: string;
@@ -8,17 +8,21 @@
 </script>
 
 <script lang="ts">
-  import { createPersistentStore } from '$lib/stores/utils';
+  import { createPersistentStore } from '#lib/stores/utils.ts';
   import { onMount } from 'svelte';
   import Loader from './Loader.svelte';
-  import { getTranslator } from '$lib/i18n';
-  import { selectedLanguage } from '$lib/stores';
-  import type { Language } from '$lib/i18n/enums';
+  import { getTranslator } from '#lib/i18n/index.ts';
+  import { selectedLanguage } from '#lib/stores/index.ts';
+  import type { Language } from '#lib/i18n/enums.ts';
 
-  export let title: string;
-  export let loadItems: () => Promise<ListItem[]>;
-  export let onItemSelected: (item: ListItem) => unknown;
-  export let persistenceKey: string;
+  interface Props {
+    title: string;
+    loadItems: () => Promise<ListItem[]>;
+    onItemSelected: (item: ListItem) => unknown;
+    persistenceKey: string;
+  }
+
+  let { title, loadItems, onItemSelected, persistenceKey }: Props = $props();
 
   // Shorter lists fit on screen, so remembering a pick would not save anything
   const RECENTS_MIN_ITEMS = 3;
@@ -26,22 +30,24 @@
   // Below this many items, searching adds more clutter than it saves
   const SEARCH_MIN_ITEMS = 8;
 
-  $: t = getTranslator($selectedLanguage as Language);
+  let t = $derived(getTranslator($selectedLanguage as Language));
 
+  // The key never changes while mounted (a different key means a different step), so one store is enough
+  // svelte-ignore state_referenced_locally
   const recents = createPersistentStore<ListItem[]>(`cache::recent::${persistenceKey}`, []);
-  $: recentIds = $recents?.map((item) => item.id) ?? [];
+  let recentIds = $derived($recents?.map((item) => item.id) ?? []);
 
-  let isLoading = true;
-  let items: ListItem[] = [];
-  let query = '';
+  let isLoading = $state(true);
+  let items: ListItem[] = $state([]);
+  let query = $state('');
 
-  $: needle = query.trim().toLowerCase();
+  let needle = $derived(query.trim().toLowerCase());
   const matches = (item: ListItem, needle: string) =>
     `${item.label} ${item.labelAr ?? ''}`.toLowerCase().includes(needle);
   const labelOf = (item: ListItem, language: string | null | undefined) =>
     language === 'ar' && item.labelAr ? item.labelAr : item.label;
-  $: visibleRecents = ($recents ?? []).filter((item) => matches(item, needle));
-  $: visibleItems = items.filter((item) => !recentIds.includes(item.id) && matches(item, needle));
+  let visibleRecents = $derived(($recents ?? []).filter((item) => matches(item, needle)));
+  let visibleItems = $derived(items.filter((item) => !recentIds.includes(item.id) && matches(item, needle)));
 
   function onSelected(selected: ListItem) {
     if (items.length > RECENTS_MIN_ITEMS) {
@@ -81,11 +87,11 @@
             class="not-button star"
             title={t('remove-recent')}
             aria-label={t('remove-recent')}
-            on:click={() => removeRecent(item)}
+            onclick={() => removeRecent(item)}
           >
             ★
           </button>
-          <button on:click={() => onSelected(item)} class="not-button row">
+          <button onclick={() => onSelected(item)} class="not-button row">
             {labelOf(item, $selectedLanguage)}
           </button>
         </li>
@@ -94,7 +100,7 @@
       {#if $recents?.length}
         <li class="separator">
           <hr />
-          <button class="not-button clickable" on:click={() => ($recents = [])}>
+          <button class="not-button clickable" onclick={() => ($recents = [])}>
             {t('clear')}
           </button>
         </li>
@@ -102,7 +108,7 @@
 
       {#each visibleItems as item (item.id)}
         <li>
-          <button on:click={() => onSelected(item)} class="not-button row">
+          <button onclick={() => onSelected(item)} class="not-button row">
             {labelOf(item, $selectedLanguage)}
           </button>
         </li>

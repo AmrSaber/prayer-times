@@ -1,4 +1,4 @@
-import { Language } from '$lib/i18n/enums';
+import { Language } from '#lib/i18n/enums.ts';
 import { derived } from 'svelte/store';
 import type { TimingsResponse } from '../types';
 import type { City, Country } from '../types/pure';

@@ -1,6 +1,6 @@
-import { CAMBRIDGE_CENTRAL_MOSQUE_ID } from '$lib/constants';
-import { cached } from '$lib/server/cache';
-import type { Day, Selection } from '$lib/types';
+import { CAMBRIDGE_CENTRAL_MOSQUE_ID } from '#lib/constants.ts';
+import { cached } from '#lib/server/cache/index.ts';
+import type { Day, Selection } from '#lib/types/index.ts';
 import * as cheerio from 'cheerio';
 import type { Provider } from './types';
 

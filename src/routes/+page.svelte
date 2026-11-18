@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { getHijriDate, getTimings } from '$lib/services';
+  import { onMount, untrack } from 'svelte';
+  import { getHijriDate, getTimings } from '#lib/services.ts';
   import {
     lastTimings,
     selectedCity,
@@ -9,17 +9,17 @@
     selectedMosqueId,
     selectionKey,
     showTimerSeconds,
-  } from '$lib/stores';
-  import { Timing, type HijriDate } from '$lib/types';
-  import type { DayTimings } from '$lib/types/pure';
-  import type { Day } from '$lib/types';
-  import { getFirstThirdOfNight, getLastThirdOfNight, getMidnight, localToday } from '$lib/utils';
+  } from '#lib/stores/index.ts';
+  import { Timing, type HijriDate } from '#lib/types/index.ts';
+  import type { DayTimings } from '#lib/types/pure.ts';
+  import type { Day } from '#lib/types/index.ts';
+  import { getFirstThirdOfNight, getLastThirdOfNight, getMidnight, localToday } from '#lib/utils/index.ts';
   import { fade } from 'svelte/transition';
-  import { getTranslator } from '$lib/i18n';
-  import type { Language } from '$lib/i18n/enums';
-  import Title from '$lib/components/Title.svelte';
-  import { EGYPT_ID, UK_ID } from '$lib/constants';
-  import ChangeMosque from '$lib/components/ChangeMosque.svelte';
+  import { getTranslator } from '#lib/i18n/index.ts';
+  import type { Language } from '#lib/i18n/enums.ts';
+  import Title from '#lib/components/Title.svelte';
+  import { EGYPT_ID, UK_ID } from '#lib/constants.ts';
+  import ChangeMosque from '#lib/components/ChangeMosque.svelte';
 
   type PrayerKey = 'fajr' | 'zuhr' | 'asr' | 'maghrib' | 'isha';
   type EventKey = PrayerKey | 'sunrise' | 'friday-prayer';
@@ -35,50 +35,23 @@
   const DAY_MS = 24 * 60 * 60 * 1000;
   const IMMINENT_MS = 5 * 60 * 1000;
 
-  let isLoading = false;
-  let loadFailed = false;
-  let showChangeMosque = false;
+  let isLoading = $state(false);
+  let loadFailed = $state(false);
+  let showChangeMosque = $state(false);
 
-  let dayTimings: DayTimings | null = null;
-  let hijriDate: HijriDate | null = null;
-  $: midnightTime = getMidnight(dayTimings);
-  $: lastThirdTime = getLastThirdOfNight(dayTimings);
-  $: firstThirdTime = getFirstThirdOfNight(dayTimings);
+  let dayTimings: DayTimings | null = $state(null);
+  let hijriDate: HijriDate | null = $state(null);
 
-  let isFriday = false;
-  let fridayPrayerTiming: Timing | undefined;
+  let isFriday = $state(false);
+  let fridayPrayerTiming: Timing | undefined = $state();
 
   // Re-evaluated on every tick; everything about "next prayer" derives from it
-  let now = new Date();
-  $: today = localToday(now);
-
-  $: location = $lastTimings?.response.location;
+  let now = $state(new Date());
 
   const HIJRI_AUTHORITIES: Record<number, string> = {
     [UK_ID]: 'https://moonsighting.org.uk',
     [EGYPT_ID]: 'https://www.dar-alifta.org',
   };
-  $: hijriAuthority = HIJRI_AUTHORITIES[$selectedCountry?.id ?? -1];
-  $: showHijriDate = hijriAuthority != null;
-  $: if (!showHijriDate) hijriDate = null;
-
-  // Everything that counts down: the five prayers, sunrise and (on Fridays) Jummah
-  $: events = buildEvents(dayTimings, fridayPrayerTiming, isFriday);
-  $: next = findNext(events, now);
-  $: msToNext = next ? next.msUntil : 0;
-  $: isImminent = next != null && msToNext <= IMMINENT_MS;
-  $: progress = next ? 1 - msToNext / next.span : 0;
-  $: countdown = formatDuration(msToNext, $showTimerSeconds ?? true);
-
-  // Iqamah is tracked separately: it can still be ahead after its azan has passed
-  $: hasIqamah = dayTimings != null && PRAYERS.some((p) => p.get(dayTimings!).congregation != null);
-  $: nextIqamah = PRAYERS.filter((p) => !(p.key === 'zuhr' && isFriday))
-    .map((p) => {
-      const congregation = dayTimings ? p.get(dayTimings).congregation : undefined;
-      return { key: p.key, ms: congregation ? msUntil(congregation, now) : Infinity };
-    })
-    .sort((a, b) => a.ms - b.ms)
-    .at(0)?.key;
 
   function buildEvents(d: DayTimings | null, jumah: Timing | undefined, friday: boolean) {
     if (d == null) return [];
@@ -195,19 +168,52 @@
     $showTimerSeconds = !$showTimerSeconds;
   }
 
-  // Reload on a new day or a new location; the hijri date is refreshed on a new day too
-  $: $selectionKey, today, load();
-  // Each country follows its own authority, so a country change must drop the previous date
-  $: if ($selectedCountry?.id) hijriDate = null;
-  $: if (today && showHijriDate && $selectedCountry) setHijriDate($selectedCountry.id);
-
   onMount(() => {
     const tickIntervalId = setInterval(() => (now = new Date()), 500);
     return () => clearInterval(tickIntervalId);
   });
 
-  $: t = getTranslator($selectedLanguage as Language);
-  $: nextTime = next?.timing.format();
+  let midnightTime = $derived(getMidnight(dayTimings));
+  let lastThirdTime = $derived(getLastThirdOfNight(dayTimings));
+  let firstThirdTime = $derived(getFirstThirdOfNight(dayTimings));
+  let today = $derived(localToday(now));
+  let location = $derived($lastTimings?.response.location);
+  let hijriAuthority = $derived(HIJRI_AUTHORITIES[$selectedCountry?.id ?? -1]);
+  let showHijriDate = $derived(hijriAuthority != null);
+  // Everything that counts down: the five prayers, sunrise and (on Fridays) Jummah
+  let events = $derived(buildEvents(dayTimings, fridayPrayerTiming, isFriday));
+  let next = $derived(findNext(events, now));
+  let msToNext = $derived(next ? next.msUntil : 0);
+  let isImminent = $derived(next != null && msToNext <= IMMINENT_MS);
+  let progress = $derived(next ? 1 - msToNext / next.span : 0);
+  let countdown = $derived(formatDuration(msToNext, $showTimerSeconds ?? true));
+  // Iqamah is tracked separately: it can still be ahead after its azan has passed
+  let hasIqamah = $derived(dayTimings != null && PRAYERS.some((p) => p.get(dayTimings!).congregation != null));
+  let nextIqamah = $derived(
+    PRAYERS.filter((p) => !(p.key === 'zuhr' && isFriday))
+      .map((p) => {
+        const congregation = dayTimings ? p.get(dayTimings).congregation : undefined;
+        return { key: p.key, ms: congregation ? msUntil(congregation, now) : Infinity };
+      })
+      .sort((a, b) => a.ms - b.ms)
+      .at(0)?.key,
+  );
+  // Reload on a new day or a new location; the hijri date is refreshed on a new day too.
+  // `load` reads and writes the stored response, so it must not become a dependency itself.
+  $effect(() => {
+    void $selectionKey;
+    void today;
+    untrack(load);
+  });
+  // Each country follows its own authority, so a country change must drop the previous date
+  $effect(() => {
+    if (!showHijriDate || $selectedCountry?.id) hijriDate = null;
+  });
+  $effect(() => {
+    if (today && showHijriDate && $selectedCountry) setHijriDate($selectedCountry.id);
+  });
+  let t = $derived(getTranslator($selectedLanguage as Language));
+  let nextTime = $derived(next?.timing.format());
 </script>
 
 <div in:fade>
@@ -225,21 +231,21 @@
   {#if loadFailed}
     <section class="card failed">
       <p>{t('load-failed')}</p>
-      <button class="pill" on:click={load}>{t('retry')}</button>
+      <button class="pill" onclick={load}>{t('retry')}</button>
     </section>
   {:else if isLoading}
-    <div class="skeleton" style="height: 4rem; margin-bottom: 1rem" />
-    <div class="skeleton" style="height: 10rem; margin-bottom: 1rem" />
-    <div class="skeleton" style="height: 16rem" />
+    <div class="skeleton" style="height: 4rem; margin-bottom: 1rem"></div>
+    <div class="skeleton" style="height: 10rem; margin-bottom: 1rem"></div>
+    <div class="skeleton" style="height: 16rem"></div>
   {:else}
     <section class="card mosque">
       <div class="mosque-info" title={t('displaying-from')}>
-        <h3>{$selectedLanguage === 'ar' ? location?.titleAr ?? location?.title : location?.title}</h3>
+        <h3>{$selectedLanguage === 'ar' ? (location?.titleAr ?? location?.title) : location?.title}</h3>
         <div class="muted small">
-          {$selectedLanguage === 'ar' ? location?.subtitleAr ?? location?.subtitle : location?.subtitle}
+          {$selectedLanguage === 'ar' ? (location?.subtitleAr ?? location?.subtitle) : location?.subtitle}
         </div>
       </div>
-      <button class="pill" on:click={() => (showChangeMosque = true)}>{t('change')}</button>
+      <button class="pill" onclick={() => (showChangeMosque = true)}>{t('change')}</button>
     </section>
 
     <section class="card hero" class:imminent={isImminent}>
@@ -255,19 +261,19 @@
         class:danger={isImminent}
         title={t('toggle-seconds')}
         aria-label={t('toggle-seconds')}
-        on:click={toggleShowTimerSeconds}
+        onclick={toggleShowTimerSeconds}
       >
         {countdown}
       </button>
 
       <div class="progress" role="presentation">
-        <div class="bar" style="width: {Math.min(Math.max(progress, 0), 1) * 100}%" />
+        <div class="bar" style="width: {Math.min(Math.max(progress, 0), 1) * 100}%"></div>
       </div>
     </section>
 
     <section class="card prayers" style="--time-columns: {hasIqamah ? 2 : 1}">
       <div class="row head muted small">
-        <span />
+        <span></span>
         <span>{t('azan')}</span>
         {#if hasIqamah}<span>{t('iqamah')}</span>{/if}
       </div>
@@ -283,7 +289,7 @@
           <span class="time">{timing?.start.format()}</span>
           {#if hasIqamah}
             <span class="time" class:accent={nextIqamah === prayer.key}>
-              {prayer.key === 'zuhr' && isFriday ? '-' : timing?.congregation?.format() ?? '-'}
+              {prayer.key === 'zuhr' && isFriday ? '-' : (timing?.congregation?.format() ?? '-')}
             </span>
           {/if}
         </div>
@@ -372,7 +378,9 @@
   .hero {
     padding: 0.75rem 1rem 0.9rem;
     text-align: center;
-    transition: border-color 0.3s, box-shadow 0.3s;
+    transition:
+      border-color 0.3s,
+      box-shadow 0.3s;
   }
 
   .hero.imminent {
@@ -441,7 +449,9 @@
     align-items: center;
     padding: 0.5rem 0.75rem;
     border-radius: 0.6rem;
-    transition: background-color 0.25s, opacity 0.25s;
+    transition:
+      background-color 0.25s,
+      opacity 0.25s;
   }
 
   .row > :not(.label) {

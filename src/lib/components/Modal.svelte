@@ -1,25 +1,29 @@
 <script lang="ts">
-  import { getTranslator } from '$lib/i18n';
-  import type { Language } from '$lib/i18n/enums';
-  import { selectedLanguage } from '$lib/stores';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { getTranslator } from '#lib/i18n/index.ts';
+  import type { Language } from '#lib/i18n/enums.ts';
+  import { selectedLanguage } from '#lib/stores/index.ts';
+  import { onMount, type Snippet } from 'svelte';
   import { fade, fly } from 'svelte/transition';
 
-  export let contentDiv: HTMLDivElement | undefined = undefined;
-  export let label = '';
+  interface Props {
+    contentDiv?: HTMLDivElement | undefined;
+    label?: string;
+    onclose: () => unknown;
+    children?: Snippet;
+  }
 
-  const dispatch = createEventDispatcher<{ close: void }>();
+  let { contentDiv = $bindable(undefined), label = '', onclose, children }: Props = $props();
 
-  $: t = getTranslator($selectedLanguage as Language);
+  let t = $derived(getTranslator($selectedLanguage as Language));
 
   // Move focus into the dialog so keyboard and screen-reader users start inside it
   onMount(() => contentDiv?.focus());
 </script>
 
-<svelte:window on:keydown={(e) => e.key === 'Escape' && dispatch('close')} />
+<svelte:window onkeydown={(e) => e.key === 'Escape' && onclose()} />
 
-<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
-<div class="container" transition:fade={{ duration: 150 }} on:click|self={() => dispatch('close')}>
+<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+<div class="container" transition:fade={{ duration: 150 }} onclick={(e) => e.target === e.currentTarget && onclose()}>
   <div
     class="content"
     role="dialog"
@@ -29,7 +33,7 @@
     bind:this={contentDiv}
     transition:fly={{ y: 24, duration: 200 }}
   >
-    <slot />
+    {@render children?.()}
   </div>
 </div>
 

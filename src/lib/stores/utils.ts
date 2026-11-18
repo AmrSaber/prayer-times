@@ -1,4 +1,4 @@
-import { LocalStorageCache } from '$lib/utils/cache';
+import { LocalStorageCache } from '#lib/utils/cache.ts';
 import { writable } from 'svelte/store';
 
 export function createPersistentStore<T>(persistanceKey: string, initialValue?: T) {

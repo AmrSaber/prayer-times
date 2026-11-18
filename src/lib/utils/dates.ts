@@ -1,5 +1,5 @@
-import { HIJRI_MONTHS, UK_TIME_ZONE } from '$lib/constants';
-import type { HijriDate, HijriDateAnchor, Nullable } from '$lib/types';
+import { HIJRI_MONTHS, UK_TIME_ZONE } from '#lib/constants.ts';
+import type { HijriDate, HijriDateAnchor, Nullable } from '#lib/types/index.ts';
 import { DateTime, Interval } from 'luxon';
 import { assert } from './polyfills';
 

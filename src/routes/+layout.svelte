@@ -1,9 +1,14 @@
 <script lang="ts">
-  import { getTranslator } from '$lib/i18n';
-  import { Language } from '$lib/i18n/enums';
-  import { lastTimings, selectedLanguage } from '$lib/stores';
-  import { purgeStaleDaily } from '$lib/utils/cache';
+  import { getTranslator } from '#lib/i18n/index.ts';
+  import { Language } from '#lib/i18n/enums.ts';
+  import { lastTimings, selectedLanguage } from '#lib/stores/index.ts';
+  import { purgeStaleDaily } from '#lib/utils/cache.ts';
   import './global.css';
+  interface Props {
+    children?: import('svelte').Snippet;
+  }
+
+  let { children }: Props = $props();
 
   // Reset local storage if version doesn't match
   const LOCAL_STORAGE_VERSION = 5;
@@ -23,13 +28,15 @@
 
   purgeStaleDaily();
 
-  $: fallback = $lastTimings?.response.fallback;
-  $: source = $lastTimings?.response.source ?? { name: 'my-masjid.com', url: 'https://my-masjid.com' };
+  let fallback = $derived($lastTimings?.response.fallback);
+  let source = $derived($lastTimings?.response.source ?? { name: 'my-masjid.com', url: 'https://my-masjid.com' });
 
-  $: t = getTranslator($selectedLanguage as Language);
+  let t = $derived(getTranslator($selectedLanguage as Language));
 
   // Set arabic tag based on language
-  $: document.body.classList.toggle('arabic', $selectedLanguage === Language.AR);
+  $effect(() => {
+    document.body.classList.toggle('arabic', $selectedLanguage === Language.AR);
+  });
 </script>
 
 <svelte:head>
@@ -38,10 +45,10 @@
 </svelte:head>
 
 <main>
-  <slot />
+  {@render children?.()}
 </main>
 
-<div id="spacer" />
+<div id="spacer"></div>
 
 <footer>
   <a href="https://github.com/AmrSaber/prayer-times" target="_blank">
@@ -52,7 +59,7 @@
   <span class="powered-by">
     {t('times-from')}
     <a href={source.url} target="_blank" rel="noreferrer">
-      {$selectedLanguage === Language.AR ? source.nameAr ?? source.name : source.name}
+      {$selectedLanguage === Language.AR ? (source.nameAr ?? source.name) : source.name}
     </a>
     {#if fallback}<span class="muted">({t('source-fallback')})</span>{/if}
   </span>

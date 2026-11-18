@@ -1,6 +1,6 @@
-import { cached } from '$lib/server/cache';
-import { EGYPT_ID, HIJRI_MONTHS } from '$lib/constants';
-import type { Day, HijriDate, Selection } from '$lib/types';
+import { cached } from '#lib/server/cache/index.ts';
+import { EGYPT_ID, HIJRI_MONTHS } from '#lib/constants.ts';
+import type { Day, HijriDate, Selection } from '#lib/types/index.ts';
 import * as cheerio from 'cheerio';
 import { DAR_ALIFTA_CITIES } from './dar-alifta-cities';
 import type { Provider } from './types';

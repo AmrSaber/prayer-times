@@ -1,5 +1,5 @@
-import type { Day, Location, Selection, Source } from '$lib/types';
-import type { City } from '$lib/types/pure';
+import type { Day, Location, Selection, Source } from '#lib/types/index.ts';
+import type { City } from '#lib/types/pure.ts';
 
 export type Provider = Source & {
   /** Whether this provider serves the selected location. Providers are tried in order. */

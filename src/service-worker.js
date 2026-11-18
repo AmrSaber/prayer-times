@@ -1,15 +1,17 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-/// <reference types="@sveltejs/kit" />
 
-import { build, files, version } from '$service-worker';
+import { version } from '$app/env';
+import { assets, immutable } from '$app/manifest';
+import { resolve } from '$app/paths';
 
 // Create a unique cache name for this deployment
 const CACHE = `cache-${version}`;
 
+// Manifest paths are relative to the base path; the fetch handler compares them with absolute pathnames
 const ASSETS = [
-  ...build, // the app itself
-  ...files, // everything in `static`
+  ...immutable.map((asset) => resolve(asset.path)), // the app itself
+  ...assets.map((asset) => resolve(asset.path)), // everything in `static`
 ];
 
 const EXCLUDED_CACHE_PATHS = [

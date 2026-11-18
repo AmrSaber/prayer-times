@@ -1,4 +1,4 @@
-import type { HijriDateAnchor } from '$lib/types';
+import type { HijriDateAnchor } from '#lib/types/index.ts';
 import { describe, expect, test } from 'bun:test';
 import { DateTime } from 'luxon';
 import { getHijriDateFromAnchor, getHijriMonthFromNumber as getMonth, londonToday, msUntilLondon } from './dates';

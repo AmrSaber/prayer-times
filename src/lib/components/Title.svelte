@@ -1,9 +1,14 @@
 <script lang="ts">
-  import { getTranslator } from '$lib/i18n';
-  import { Language } from '$lib/i18n/enums';
-  import { selectedLanguage } from '$lib/stores';
+  import { getTranslator } from '#lib/i18n/index.ts';
+  import { Language } from '#lib/i18n/enums.ts';
+  import { selectedLanguage } from '#lib/stores/index.ts';
+  interface Props {
+    children?: import('svelte').Snippet;
+  }
 
-  $: t = getTranslator($selectedLanguage as Language);
+  let { children }: Props = $props();
+
+  let t = $derived(getTranslator($selectedLanguage as Language));
 
   function toggleLanguage() {
     $selectedLanguage = $selectedLanguage === Language.EN ? Language.AR : Language.EN;
@@ -13,10 +18,10 @@
 <header>
   <div class="heading">
     <h1>{t('title')}</h1>
-    <slot />
+    {@render children?.()}
   </div>
 
-  <button class="pill" class:arabic={$selectedLanguage !== Language.AR} on:click={toggleLanguage}>
+  <button class="pill" class:arabic={$selectedLanguage !== Language.AR} onclick={toggleLanguage}>
     {t('change-language')}
   </button>
 </header>

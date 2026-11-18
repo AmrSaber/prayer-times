@@ -1,4 +1,4 @@
-import type { Nullable } from '$lib/types';
+import type { Nullable } from '#lib/types/index.ts';
 import { localToday } from './dates';
 
 export type CachedMeta = { expiresAt?: number };

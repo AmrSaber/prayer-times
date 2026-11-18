@@ -1,5 +1,5 @@
-import { ID, param, respond } from '$lib/server/http';
-import { getCities } from '$lib/server/providers';
+import { ID, param, respond } from '#lib/server/http.ts';
+import { getCities } from '#lib/server/providers/index.ts';
 
 export const GET = ({ url }) => {
   const country = Number(param(url, 'country', ID));

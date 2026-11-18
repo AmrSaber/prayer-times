@@ -80,7 +80,8 @@ export class Timing {
   format(withSeconds = false): string {
     this.normalize();
 
-    let { hours, minutes, seconds } = this;
+    const { seconds } = this;
+    let { hours, minutes } = this;
 
     const values: number[] = [];
     if (withSeconds) {
@@ -88,7 +89,6 @@ export class Timing {
     } else {
       if (seconds > 0) {
         minutes++;
-        seconds = 0;
 
         // Normalize hours/minutes after minutes update
         hours = (hours + Math.floor(minutes / 60)) % 24;

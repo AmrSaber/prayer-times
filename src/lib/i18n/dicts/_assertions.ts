@@ -1,4 +1,4 @@
-import { assert } from '$lib/utils';
+import { assert } from '#lib/utils/index.ts';
 import arDict from './ar';
 import enDict from './en';
 

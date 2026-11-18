@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { getTranslator } from '$lib/i18n';
-  import type { Language } from '$lib/i18n/enums';
-  import { getCities, getCountries, getMosques } from '$lib/services';
+  import { getTranslator } from '#lib/i18n/index.ts';
+  import type { Language } from '#lib/i18n/enums.ts';
+  import { getCities, getCountries, getMosques } from '#lib/services.ts';
   import {
     lastTimings,
     selectedCity,
@@ -9,25 +9,27 @@
     selectedLanguage,
     selectedMosqueId,
     selectionKey,
-  } from '$lib/stores';
+  } from '#lib/stores/index.ts';
   import type { ListItem } from './ListWithRecents.svelte';
   import ListWithRecents from './ListWithRecents.svelte';
   import Modal from './Modal.svelte';
 
-  export let onClose: () => unknown;
-
-  let modalContent: HTMLDivElement;
-
-  $: t = getTranslator($selectedLanguage as Language);
-
-  enum Mode {
-    CHANGE_COUNTRY,
-    CHANGE_CITY,
-    CHANGE_MOSQUE,
+  interface Props {
+    onClose: () => unknown;
   }
 
+  let { onClose }: Props = $props();
+
+  let modalContent = $state<HTMLDivElement>();
+
+  let t = $derived(getTranslator($selectedLanguage as Language));
+
+  // Not an enum: Svelte doesn't compile TypeScript enums inside components
+  const Mode = { CHANGE_COUNTRY: 0, CHANGE_CITY: 1, CHANGE_MOSQUE: 2 } as const;
+  type Mode = (typeof Mode)[keyof typeof Mode];
+
   // Start at the first step that still needs a value
-  let mode = Mode.CHANGE_MOSQUE;
+  let mode = $state<Mode>(Mode.CHANGE_MOSQUE);
   if ($selectedCountry == null) {
     mode = Mode.CHANGE_COUNTRY;
   } else if ($selectedCity == null || $selectedCity.complete) {
@@ -39,7 +41,7 @@
     language === 'ar' && city?.nameAr ? city.nameAr : city?.name;
 
   // Some providers list only cities, so there is no mosque step for them
-  $: steps = [
+  let steps = $derived([
     { mode: Mode.CHANGE_COUNTRY, label: t('country'), value: $selectedCountry?.name, enabled: true },
     {
       mode: Mode.CHANGE_CITY,
@@ -57,7 +59,7 @@
             enabled: $selectedCity != null,
           },
         ]),
-  ];
+  ]);
 
   async function loadMosques() {
     const mosques = await getMosques($selectedCountry!.id, $selectedCity!.id);
@@ -105,11 +107,11 @@
 
   function changeMode(newMode: Mode) {
     mode = newMode;
-    modalContent.scrollTo({ top: 0, behavior: 'smooth' });
+    modalContent?.scrollTo({ top: 0, behavior: 'smooth' });
   }
 </script>
 
-<Modal on:close={onClose} bind:contentDiv={modalContent} label={t('change-mosque-title')}>
+<Modal onclose={onClose} bind:contentDiv={modalContent} label={t('change-mosque-title')}>
   <div class="top">
     <nav class="steps" aria-label="steps">
       {#each steps as step (step.mode)}
@@ -118,7 +120,7 @@
           class:active={mode === step.mode}
           disabled={!step.enabled}
           aria-current={mode === step.mode ? 'step' : undefined}
-          on:click={() => changeMode(step.mode)}
+          onclick={() => changeMode(step.mode)}
         >
           <span class="step-label">{step.label}</span>
           <span class="step-value">{step.value ?? '—'}</span>
@@ -127,7 +129,7 @@
     </nav>
 
     {#if $selectionKey != null}
-      <button class="not-button close" aria-label={t('close')} on:click={onClose}>✕</button>
+      <button class="not-button close" aria-label={t('close')} onclick={onClose}>✕</button>
     {/if}
   </div>
 

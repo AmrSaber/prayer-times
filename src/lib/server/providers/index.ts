@@ -1,5 +1,5 @@
-import type { Selection, TimingsResponse } from '$lib/types';
-import type { City } from '$lib/types/pure';
+import type { Selection, TimingsResponse } from '#lib/types/index.ts';
+import type { City } from '#lib/types/pure.ts';
 import { cambridgeMosque } from './cambridge-mosque';
 import { darAlifta } from './dar-alifta';
 import { getCities as getMyMasjidCities, myMasjid } from './my-masjid';

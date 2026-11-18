@@ -1,7 +1,7 @@
-import { getCacheStore } from '$lib/server';
-import { HIJRI_SOURCES, today } from '$lib/server/hijri';
-import type { HijriDateAnchor } from '$lib/types/api.js';
-import { getHijriDateFromAnchor } from '$lib/utils/dates.js';
+import { getCacheStore } from '#lib/server/index.ts';
+import { HIJRI_SOURCES, today } from '#lib/server/hijri.ts';
+import type { HijriDateAnchor } from '#lib/types/api.js';
+import { getHijriDateFromAnchor } from '#lib/utils/dates.js';
 import { json } from '@sveltejs/kit';
 
 export async function GET({ params }) {

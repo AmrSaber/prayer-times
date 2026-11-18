@@ -1,5 +1,5 @@
-import { GUID, ID, ISO_DATE, param, respond } from '$lib/server/http';
-import { getTimings } from '$lib/server/providers';
+import { GUID, ID, ISO_DATE, param, respond } from '#lib/server/http.ts';
+import { getTimings } from '#lib/server/providers/index.ts';
 
 export const GET = ({ url }) => {
   const selection = {
